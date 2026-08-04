@@ -769,3 +769,60 @@ canvas {
 .source-item.highlight-hard .source-item-text {
   color: #ff9a9a;
 }
+
+/* --- Metallurgic Perfection page --- */
+
+#metallurgyTableWrapper {
+  padding: 16px 20px;
+  overflow-x: auto;
+}
+
+#metallurgyTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#metallurgyTable th,
+#metallurgyTable td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid #333;
+}
+
+#metallurgyTable th {
+  color: #9a968a;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+#metallurgyTable tbody tr:hover {
+  background: #202124;
+}
+
+.metal-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.req-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.req-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background: #26272a;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.req-chip img {
+  width: 18px;
+  height: 18px;
+}

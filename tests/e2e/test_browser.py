@@ -220,6 +220,16 @@ def test_gtnh_preset_checks_the_expected_packs(live_server, page):
     assert set(checked) == {"vanilla_tc", "gregtech", "forbidden_magic", "magic_bees"}
 
 
+def test_gtnh_preset_is_checked_by_default_on_load(live_server, page):
+    page.goto(f"{live_server}/")
+    page.wait_for_selector("#packs input[type=checkbox]")
+    checked = page.eval_on_selector_all(
+        "#packs input[type=checkbox]",
+        "els => els.filter(el => el.checked).map(el => el.value)",
+    )
+    assert set(checked) == {"vanilla_tc", "gregtech", "forbidden_magic", "magic_bees"}
+
+
 # --- Connection Helper --------------------------------------------------------
 
 
@@ -279,3 +289,37 @@ def test_sources_search_filters_cards_by_aspect(live_server, page):
         ".source-card-header span", "els => els.map(el => el.textContent)"
     )
     assert names == ["Aer"]
+
+
+# --- Metallurgic Perfection ---------------------------------------------------
+
+
+def test_metallurgy_table_lists_recipes_with_aspect_chips(live_server, page):
+    page.goto(f"{live_server}/metallurgy")
+    page.wait_for_selector("#metallurgyBody tr")
+
+    rows = page.query_selector_all("#metallurgyBody tr")
+    assert len(rows) > 50  # the sheet lists 77 metals
+
+    iron_row = page.eval_on_selector(
+        "#metallurgyBody",
+        """el => {
+            const row = Array.from(el.querySelectorAll('tr')).find(
+                tr => tr.querySelector('.metal-name')?.textContent === 'Iron'
+            );
+            return Array.from(row.querySelectorAll('.req-chip span')).map(s => s.textContent);
+        }""",
+    )
+    assert iron_row == ["2× Metallum", "2× Nebrisum", "1× Ordo"]
+
+
+def test_metallurgy_search_filters_rows_by_metal_name(live_server, page):
+    page.goto(f"{live_server}/metallurgy")
+    page.wait_for_selector("#metallurgyBody tr")
+    page.fill("#searchBox", "gold")
+    page.wait_for_timeout(150)
+
+    names = page.eval_on_selector_all(
+        "#metallurgyBody .metal-name", "els => els.map(el => el.textContent)"
+    )
+    assert names == ["Gold"]

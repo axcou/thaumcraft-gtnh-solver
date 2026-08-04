@@ -39,13 +39,15 @@ thaumcraft_gtnh/
 │   ├── solver.py             # research-table board solving algorithm
 │   ├── connections.py        # aspect-to-aspect connection finder
 │   ├── sources.py            # curated cheap/pure item sources per aspect
+│   ├── metallurgy.py         # Metallurgic Perfection infusion recipes per metal
 │   ├── webapp.py             # Flask server: page routes, /aspects, /solve, /connect
 │   ├── templates/
 │   │   ├── base.html             # shared shell: tab nav + content block
 │   │   ├── solver.html           # Research Table Solver
 │   │   ├── connections.html      # Connection Helper
 │   │   ├── combinations.html     # Aspect Combination
-│   │   └── sources.html          # Aspect Sources
+│   │   ├── sources.html          # Aspect Sources
+│   │   └── metallurgy.html       # Metallurgic Perfection
 │   └── static/
 │       ├── style.css
 │       ├── utils.js              # shared: capitalize(), icon-tile helper
@@ -58,6 +60,7 @@ thaumcraft_gtnh/
 │       ├── aspect-tree.js        # Aspect Combination: pan/zoom + tree diagram
 │       ├── combinations.js       # Aspect Combination: aspect list/search + init
 │       ├── aspect-sources.js     # Aspect Sources: card grid + filters + init
+│       ├── metallurgy.js         # Metallurgic Perfection: recipe table + search
 │       └── icons/                # 72 aspect SVGs (game-icons.net, CC BY 3.0)
 └── tests/
     ├── unit/               # pure Python, no Flask/network -- fast, run these most
@@ -65,7 +68,8 @@ thaumcraft_gtnh/
     │   ├── test_hexboard.py      # hex geometry (neighbors, distance, cell count)
     │   ├── test_solver.py        # board-solving algorithm
     │   ├── test_connections.py   # aspect-to-aspect connection finder
-    │   └── test_sources.py       # ASPECT_SOURCES invariants
+    │   ├── test_sources.py       # ASPECT_SOURCES invariants
+    │   └── test_metallurgy.py    # METALLURGIC_RECIPES invariants
     ├── integration/
     │   └── test_webapp.py        # Flask routes/JSON via test_client, no live server
     └── e2e/
@@ -105,13 +109,13 @@ tests skip themselves instead of failing.
 python -m tcsolver.webapp
 ```
 
-Then open <http://localhost:5000>. The site has 4 tabs:
+Then open <http://localhost:5000>. The site has 5 tabs:
 
 - **Research Table Solver** -- the hex board solver.
   - Pick a board size (3 to 6 -- the board regenerates automatically) and
-    which mods are active (Vanilla TC is on by default; Forbidden Magic,
-    Gregtech, Magic Bees, Avaritia, and a few other GT:NH packs are also
-    available).
+    which mods are active (the GTNH preset -- Vanilla TC, Forbidden Magic,
+    Gregtech, Magic Bees -- is on by default; Avaritia and a few other
+    GT:NH packs are also available).
   - Drag an aspect from a side panel onto a cell to place an aspect already
     revealed by the research in progress.
   - Click a cell to clear it (aspect or bar); on an empty cell, that bars/
@@ -134,6 +138,10 @@ Then open <http://localhost:5000>. The site has 4 tabs:
   0-impurity ones, "Especially good only" keeps the sheet's green
   (especially good/surprising) picks -- red-flagged entries (pure, but
   hard to get) are shown in both.
+- **Metallurgic Perfection** -- a searchable table of every metal and how
+  many of which aspects its nugget needs to be infused with, restricted
+  to your active mods (a metal disappears if any of its required aspects
+  belongs to a disabled pack).
 
 ## Icons
 
@@ -142,13 +150,14 @@ The aspect icons (`tcsolver/static/icons/*.svg`) come from
 Cathelineau -- [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)),
 via `universal_tc_research_solver`'s source list (`icon_sources.txt`).
 
-## Aspect sources data
+## Reference data from the community spreadsheet
 
-`tcsolver/sources.py` is a straight port of the community-maintained
-["EasyPure Aspect Sources" spreadsheet](https://docs.google.com/spreadsheets/d/1Llvu91Vmn4RcCE__lKV8p_MIR9tiaV2URGbkombvlkE),
-including its green (especially-good) and red (pure-but-hard)
-highlighting. It doesn't cover every aspect -- only the ones the sheet
-itself lists.
+`tcsolver/sources.py` and `tcsolver/metallurgy.py` are straight ports of
+two tabs of the community-maintained
+["EasyPure Aspect Sources" spreadsheet](https://docs.google.com/spreadsheets/d/1Llvu91Vmn4RcCE__lKV8p_MIR9tiaV2URGbkombvlkE):
+"EasyPure Aspect Sources" itself (including its green/especially-good and
+red/pure-but-hard highlighting -- neither covers every aspect, only the
+ones each sheet tab lists) and "Metallurgic Perfection Recipes".
 
 ## Using it as a library
 

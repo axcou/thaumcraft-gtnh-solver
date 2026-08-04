@@ -11,6 +11,7 @@ from . import aspects
 from .connections import find_connection
 from .hexboard import HexBoard
 from .solver import solve
+from .metallurgy import METALLURGIC_RECIPES
 from .sources import ASPECT_SOURCES
 
 app = Flask(__name__)
@@ -54,6 +55,7 @@ NAV = [
     {"slug": "connections", "path": "/connections", "label": "Connection Helper"},
     {"slug": "combinations", "path": "/combinations", "label": "Aspect Combination"},
     {"slug": "sources", "path": "/sources", "label": "Aspect Sources"},
+    {"slug": "metallurgy", "path": "/metallurgy", "label": "Metallurgic Perfection"},
 ]
 
 
@@ -77,6 +79,11 @@ def sources_page() -> Any:
     return render_template("sources.html", active="sources", nav=NAV)
 
 
+@app.get("/metallurgy")
+def metallurgy_page() -> Any:
+    return render_template("metallurgy.html", active="metallurgy", nav=NAV)
+
+
 @app.get("/aspects")
 def get_aspects() -> Any:
     return jsonify(
@@ -87,6 +94,7 @@ def get_aspects() -> Any:
             "default_packs": aspects.DEFAULT_PACKS,
             "complexity": aspects.COMPLEXITY,
             "sources": ASPECT_SOURCES,
+            "metallurgy": METALLURGIC_RECIPES,
         }
     )
 

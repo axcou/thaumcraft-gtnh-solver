@@ -25,6 +25,7 @@ def client():
         ("/connections", "Connection Helper"),
         ("/combinations", "Aspect Combination"),
         ("/sources", "Aspect Sources"),
+        ("/metallurgy", "Metallurgic Perfection"),
     ],
 )
 def test_each_page_loads_and_shows_its_heading(client, path, heading):
@@ -55,7 +56,9 @@ def test_unknown_route_is_a_404(client):
 
 def test_aspects_endpoint_shape(client):
     data = client.get("/aspects").get_json()
-    assert set(data) == {"aspects", "flavor", "packs", "default_packs", "complexity", "sources"}
+    assert set(data) == {
+        "aspects", "flavor", "packs", "default_packs", "complexity", "sources", "metallurgy",
+    }
     assert data["aspects"] == aspects.ASPECT_TABLE
     assert data["packs"] == aspects.PACKS
     assert data["default_packs"] == aspects.DEFAULT_PACKS
@@ -67,6 +70,12 @@ def test_aspects_endpoint_shape(client):
         for entry in entries:
             assert set(entry) == {"item", "impurity", "highlight"}
             assert entry["highlight"] in (None, "good", "hard")
+    # every metallurgy requirement must reference a real aspect
+    for recipe in data["metallurgy"]:
+        assert set(recipe) == {"metal", "requires"}
+        for req in recipe["requires"]:
+            assert set(req) == {"aspect", "amount"}
+            assert req["aspect"] in aspects.ALL_ASPECTS
 
 
 # --- /solve ----------------------------------------------------------------
