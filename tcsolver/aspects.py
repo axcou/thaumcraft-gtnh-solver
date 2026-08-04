@@ -5,6 +5,13 @@ Ported verbatim from `aspect_table` (lines 855-930) and `aspect_set` (lines
 already curates a set relevant to GTNH (vanilla Thaumcraft + Forbidden Magic
 + Gregtech + Magic Bees + Avaritia + a few extra GT:NH-side mods).
 
+The 7 Thaumic Tinkerer aspects (aequalitas, primordium, astrum, caelum,
+gloria, tabernus, vesania) were missing from that port and were added from
+the "TC (Aspects)" tab of a GTNH guide spreadsheet
+(https://docs.google.com/spreadsheets/d/1rsB5OOAkFgJ_lzhtVzWZc2aNCSo0e6lRhJG8Po7NZtY);
+5 of the 7 are also directly referenced by name in GTNH's own GregTech
+source (`TCAspects.java`), confirming they're live aspects in the pack.
+
 Each compound aspect lists its exactly-2 direct components; primal aspects
 have an empty list.
 """
@@ -89,6 +96,14 @@ ASPECT_TABLE: Dict[str, List[str]] = {
     "mru": ["praecantatio", "potentia"],
     "radiation": ["mru", "motus"],
     "matrix": ["mru", "humanus"],
+    # --- Thaumic Tinkerer (7) ---
+    "aequalitas": ["cognitio", "ordo"],
+    "primordium": ["motus", "vacuos"],
+    "astrum": ["lux", "primordium"],
+    "caelum": ["vitreus", "metallum"],
+    "gloria": ["humanus", "iter"],
+    "tabernus": ["tutamen", "iter"],
+    "vesania": ["cognitio", "vitium"],
 }
 
 # English display flavor for each aspect id (from aspect_flavor_dict).
@@ -165,6 +180,13 @@ FLAVOR: Dict[str, str] = {
     "mru": "magical radiation unit",
     "radiation": "radiation",
     "matrix": "protection",
+    "aequalitas": "equality",
+    "primordium": "genesis",
+    "astrum": "star",
+    "caelum": "sky",
+    "gloria": "glory",
+    "tabernus": "shelter",
+    "vesania": "insanity",
 }
 
 # Aspect packs, mirroring `aspect_set` in the reference solver.
@@ -189,6 +211,9 @@ PACKS: Dict[str, List[str]] = {
     "revelations": ["exubitor"],
     "additions": ["saxum", "granum"],
     "essential": ["mru", "radiation", "matrix"],
+    "thaumic_tinkerer": [
+        "aequalitas", "primordium", "astrum", "caelum", "gloria", "tabernus", "vesania",
+    ],
 }
 
 # The GTNH preset (see packs.js's GTNH_PRESET) doubles as the default

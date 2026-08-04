@@ -3,7 +3,11 @@ would catch a typo or a copy/paste mistake in ASPECT_TABLE/PACKS/FLAVOR
 long before it ever showed up as a confusing solver or connection-finder
 bug."""
 
+from pathlib import Path
+
 from tcsolver import aspects
+
+ICONS_DIR = Path(__file__).resolve().parents[2] / "tcsolver" / "static" / "icons"
 
 
 def test_components_are_zero_or_two():
@@ -79,6 +83,32 @@ def test_enabled_aspects_ignores_unknown_pack_names():
 def test_default_packs_are_a_valid_pack_name():
     for pack in aspects.DEFAULT_PACKS:
         assert pack in aspects.PACKS
+
+
+def test_thaumic_tinkerer_aspects_are_present():
+    # Regression test: these 7 aspects were missing from the initial port
+    # (see aspects.py's module docstring) and were added from the "TC
+    # (Aspects)" tab of a GTNH guide spreadsheet.
+    expected = {
+        "aequalitas": ["cognitio", "ordo"],
+        "primordium": ["motus", "vacuos"],
+        "astrum": ["lux", "primordium"],
+        "caelum": ["vitreus", "metallum"],
+        "gloria": ["humanus", "iter"],
+        "tabernus": ["tutamen", "iter"],
+        "vesania": ["cognitio", "vitium"],
+    }
+    for name, comps in expected.items():
+        assert aspects.ASPECT_TABLE[name] == comps
+    assert set(aspects.PACKS["thaumic_tinkerer"]) == set(expected)
+
+
+def test_every_aspect_has_an_icon_file():
+    # Every page renders <img src="/static/icons/{aspect}.svg"> for any
+    # enabled aspect -- a new aspect with no icon file silently shows a
+    # broken image everywhere instead of failing anything.
+    missing = [name for name in aspects.ALL_ASPECTS if not (ICONS_DIR / f"{name}.svg").is_file()]
+    assert not missing, f"no icon file for: {missing}"
 
 
 def test_default_packs_is_the_gtnh_preset():
