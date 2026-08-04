@@ -48,3 +48,20 @@ def test_dataset_is_reasonably_large():
     # A regression guard against a truncated/empty regeneration.
     data = _load()
     assert len(data["items"]) > 10_000
+
+
+def test_no_duplicate_name_and_aspects_entries():
+    # Regression test: the raw "GTNH Aspects" sheet had 778 groups of
+    # exact (name, aspects) duplicate rows (2039 redundant rows total),
+    # which showed up as literal duplicate rows on the Item Aspect Lookup
+    # page -- most visibly among the purest (single-aspect) items, which
+    # sort to the top whenever a specific aspect is filtered.
+    data = _load()
+    seen = set()
+    duplicates = []
+    for item in data["items"]:
+        key = (item["name"], tuple(sorted(item["aspects"].items())))
+        if key in seen:
+            duplicates.append(key)
+        seen.add(key)
+    assert not duplicates, f"{len(duplicates)} duplicate (name, aspects) rows, e.g. {duplicates[:5]}"
