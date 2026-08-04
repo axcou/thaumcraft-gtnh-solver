@@ -11,6 +11,7 @@ from . import aspects
 from .connections import find_connection
 from .hexboard import HexBoard
 from .solver import solve
+from .sources import ASPECT_SOURCES
 
 app = Flask(__name__)
 
@@ -52,7 +53,7 @@ NAV = [
     {"slug": "solver", "path": "/", "label": "Research Table Solver"},
     {"slug": "connections", "path": "/connections", "label": "Connection Helper"},
     {"slug": "combinations", "path": "/combinations", "label": "Aspect Combination"},
-    {"slug": "placeholder", "path": "/placeholder", "label": "Placeholder"},
+    {"slug": "sources", "path": "/sources", "label": "Aspect Sources"},
 ]
 
 
@@ -71,9 +72,9 @@ def combinations_page() -> Any:
     return render_template("combinations.html", active="combinations", nav=NAV)
 
 
-@app.get("/placeholder")
-def placeholder_page() -> Any:
-    return render_template("placeholder.html", active="placeholder", nav=NAV)
+@app.get("/sources")
+def sources_page() -> Any:
+    return render_template("sources.html", active="sources", nav=NAV)
 
 
 @app.get("/aspects")
@@ -85,6 +86,7 @@ def get_aspects() -> Any:
             "packs": aspects.PACKS,
             "default_packs": aspects.DEFAULT_PACKS,
             "complexity": aspects.COMPLEXITY,
+            "sources": ASPECT_SOURCES,
         }
     )
 

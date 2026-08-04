@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Aspect Sources - Thaumcraft Research Solver{% endblock %}
+{% block content %}
+<header>
+  <h1>Aspect Sources</h1>
+  <p>
+    Cheap, pure item sources for each aspect (community-curated) -- green
+    entries are especially good/surprising finds, red ones are pure but
+    hard to get your hands on.
+  </p>
+</header>
+
+<div id="toolbar">
+  <input type="text" id="searchBox" placeholder="Search aspects..." />
+  <label><input type="checkbox" id="pureOnly" /> Pure sources only</label>
+  <label><input type="checkbox" id="goodOnly" /> Especially good only</label>
+</div>
+
+<div id="sourcesGrid" class="sources-grid"></div>
+
+<fieldset class="panel-fieldset">
+  <legend>Active mods</legend>
+  <div id="packs"></div>
+</fieldset>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='utils.js') }}?v={{ static_version('utils.js') }}"></script>
+<script src="{{ url_for('static', filename='packs.js') }}?v={{ static_version('packs.js') }}"></script>
+<script src="{{ url_for('static', filename='aspect-sources.js') }}?v={{ static_version('aspect-sources.js') }}"></script>
+{% endblock %}

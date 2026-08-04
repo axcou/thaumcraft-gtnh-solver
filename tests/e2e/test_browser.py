@@ -240,3 +240,42 @@ def test_connection_helper_finds_a_chain(live_server, page):
     last_name = items[-1].query_selector("span").text_content()
     assert first_name == "Aer"
     assert last_name == "Lux"
+
+
+# --- Aspect Sources -----------------------------------------------------------
+
+
+def test_sources_pure_only_filter_hides_impure_items(live_server, page):
+    page.goto(f"{live_server}/sources")
+    page.wait_for_selector(".source-card")
+    page.check("#pureOnly")
+    page.wait_for_timeout(100)
+
+    badges = page.eval_on_selector_all(
+        ".impurity-badge", "els => els.map(el => el.textContent)"
+    )
+    assert badges  # the filter shouldn't wipe out every source
+    assert all(b == "pure" for b in badges)
+
+
+def test_sources_good_only_filter_keeps_only_green_items(live_server, page):
+    page.goto(f"{live_server}/sources")
+    page.wait_for_selector(".source-card")
+    page.check("#goodOnly")
+    page.wait_for_timeout(100)
+
+    items = page.query_selector_all(".source-item")
+    assert items
+    assert all("highlight-good" in (i.get_attribute("class") or "") for i in items)
+
+
+def test_sources_search_filters_cards_by_aspect(live_server, page):
+    page.goto(f"{live_server}/sources")
+    page.wait_for_selector(".source-card")
+    page.fill("#searchBox", "aer")
+    page.wait_for_timeout(150)
+
+    names = page.eval_on_selector_all(
+        ".source-card-header span", "els => els.map(el => el.textContent)"
+    )
+    assert names == ["Aer"]

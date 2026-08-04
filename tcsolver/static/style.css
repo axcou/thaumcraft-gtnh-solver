@@ -679,3 +679,93 @@ canvas {
   font-style: italic;
   font-size: 0.85rem;
 }
+
+/* --- Aspect Sources page --- */
+
+#toolbar label {
+  gap: 8px;
+}
+
+.sources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.empty-hint {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #9a968a;
+  padding: 40px 0;
+}
+
+.source-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #202124;
+  border: 1px solid #333;
+  border-radius: 6px;
+}
+
+.source-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #333;
+}
+
+.source-card-header img {
+  width: 26px;
+  height: 26px;
+}
+
+.source-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.source-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.impurity-badge {
+  flex-shrink: 0;
+  min-width: 32px;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #9a968a;
+  border: 1px solid #444;
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+
+.source-item.highlight-good .impurity-badge {
+  color: #1c1d1f;
+  background: #4fd15c;
+  border-color: #4fd15c;
+}
+
+.source-item.highlight-hard .impurity-badge {
+  color: #1c1d1f;
+  background: #e05c5c;
+  border-color: #e05c5c;
+}
+
+.source-item.highlight-good .source-item-text {
+  color: #8ef29a;
+}
+
+.source-item.highlight-hard .source-item-text {
+  color: #ff9a9a;
+}

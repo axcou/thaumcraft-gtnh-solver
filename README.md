@@ -38,13 +38,14 @@ thaumcraft_gtnh/
 │   ├── hexboard.py           # hexagonal geometry (axial coordinates)
 │   ├── solver.py             # research-table board solving algorithm
 │   ├── connections.py        # aspect-to-aspect connection finder
+│   ├── sources.py            # curated cheap/pure item sources per aspect
 │   ├── webapp.py             # Flask server: page routes, /aspects, /solve, /connect
 │   ├── templates/
 │   │   ├── base.html             # shared shell: tab nav + content block
 │   │   ├── solver.html           # Research Table Solver
 │   │   ├── connections.html      # Connection Helper
 │   │   ├── combinations.html     # Aspect Combination
-│   │   └── placeholder.html      # Placeholder
+│   │   └── sources.html          # Aspect Sources
 │   └── static/
 │       ├── style.css
 │       ├── utils.js              # shared: capitalize(), icon-tile helper
@@ -56,14 +57,15 @@ thaumcraft_gtnh/
 │       ├── connections.js        # Connection Helper: page logic
 │       ├── aspect-tree.js        # Aspect Combination: pan/zoom + tree diagram
 │       ├── combinations.js       # Aspect Combination: aspect list/search + init
-│       ├── placeholder.js        # Placeholder: page logic
+│       ├── aspect-sources.js     # Aspect Sources: card grid + filters + init
 │       └── icons/                # 72 aspect SVGs (game-icons.net, CC BY 3.0)
 └── tests/
     ├── unit/               # pure Python, no Flask/network -- fast, run these most
     │   ├── test_aspects.py       # ASPECT_TABLE/PACKS/complexity invariants
     │   ├── test_hexboard.py      # hex geometry (neighbors, distance, cell count)
     │   ├── test_solver.py        # board-solving algorithm
-    │   └── test_connections.py   # aspect-to-aspect connection finder
+    │   ├── test_connections.py   # aspect-to-aspect connection finder
+    │   └── test_sources.py       # ASPECT_SOURCES invariants
     ├── integration/
     │   └── test_webapp.py        # Flask routes/JSON via test_client, no live server
     └── e2e/
@@ -126,7 +128,12 @@ Then open <http://localhost:5000>. The site has 4 tabs:
   combination graph (preferring aspects from your active mods).
 - **Aspect Combination** -- a searchable reference of every aspect and
   what it is made from (or "Primal aspect" if it has no components).
-- **Placeholder** -- reserved for a future page.
+- **Aspect Sources** -- a searchable, filterable reference of cheap item
+  sources for each aspect (community-curated), one card per aspect. Each
+  entry shows its impurity count; "Pure sources only" keeps just the
+  0-impurity ones, "Especially good only" keeps the sheet's green
+  (especially good/surprising) picks -- red-flagged entries (pure, but
+  hard to get) are shown in both.
 
 ## Icons
 
@@ -134,6 +141,14 @@ The aspect icons (`tcsolver/static/icons/*.svg`) come from
 [game-icons.net](https://game-icons.net/) (authors Lorc, Delapouite,
 Cathelineau -- [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)),
 via `universal_tc_research_solver`'s source list (`icon_sources.txt`).
+
+## Aspect sources data
+
+`tcsolver/sources.py` is a straight port of the community-maintained
+["EasyPure Aspect Sources" spreadsheet](https://docs.google.com/spreadsheets/d/1Llvu91Vmn4RcCE__lKV8p_MIR9tiaV2URGbkombvlkE),
+including its green (especially-good) and red (pure-but-hard)
+highlighting. It doesn't cover every aspect -- only the ones the sheet
+itself lists.
 
 ## Using it as a library
 

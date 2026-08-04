@@ -24,7 +24,7 @@ def client():
         ("/", "Research Table Solver"),
         ("/connections", "Connection Helper"),
         ("/combinations", "Aspect Combination"),
-        ("/placeholder", "Placeholder"),
+        ("/sources", "Aspect Sources"),
     ],
 )
 def test_each_page_loads_and_shows_its_heading(client, path, heading):
@@ -55,11 +55,18 @@ def test_unknown_route_is_a_404(client):
 
 def test_aspects_endpoint_shape(client):
     data = client.get("/aspects").get_json()
-    assert set(data) == {"aspects", "flavor", "packs", "default_packs", "complexity"}
+    assert set(data) == {"aspects", "flavor", "packs", "default_packs", "complexity", "sources"}
     assert data["aspects"] == aspects.ASPECT_TABLE
     assert data["packs"] == aspects.PACKS
     assert data["default_packs"] == aspects.DEFAULT_PACKS
     assert set(data["complexity"]) == set(data["aspects"])
+    # every aspect with sources must be a real one, and every entry must
+    # carry the fields the Aspect Sources page's filters rely on
+    assert set(data["sources"]) <= set(data["aspects"])
+    for entries in data["sources"].values():
+        for entry in entries:
+            assert set(entry) == {"item", "impurity", "highlight"}
+            assert entry["highlight"] in (None, "good", "hard")
 
 
 # --- /solve ----------------------------------------------------------------
