@@ -79,3 +79,11 @@ def test_enabled_aspects_ignores_unknown_pack_names():
 def test_default_packs_are_a_valid_pack_name():
     for pack in aspects.DEFAULT_PACKS:
         assert pack in aspects.PACKS
+
+
+def test_default_packs_is_the_gtnh_preset():
+    # Every page must open with the same GTNH preset pre-checked (see
+    # packs.js's GTNH_PRESET) -- not just vanilla_tc.
+    assert set(aspects.DEFAULT_PACKS) == {
+        "vanilla_tc", "gregtech", "forbidden_magic", "magic_bees",
+    }

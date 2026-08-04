@@ -291,6 +291,50 @@ def test_sources_search_filters_cards_by_aspect(live_server, page):
     assert names == ["Aer"]
 
 
+def test_sources_pure_and_good_filters_combine_as_or(live_server, page):
+    # Checking both keeps an item if it matches *either* filter, not only
+    # items that are both pure and especially-good at once.
+    page.goto(f"{live_server}/sources")
+    page.wait_for_selector(".source-card")
+    page.check("#pureOnly")
+    page.check("#goodOnly")
+    page.wait_for_timeout(100)
+
+    violation = page.eval_on_selector_all(
+        ".source-item",
+        """els => els.filter(el =>
+            !el.classList.contains('highlight-good') &&
+            el.querySelector('.impurity-badge').textContent !== 'pure'
+        ).length""",
+    )
+    assert violation == 0
+
+
+def test_sources_shows_empty_hint_when_no_aspect_matches_search(live_server, page):
+    page.goto(f"{live_server}/sources")
+    page.wait_for_selector(".source-card")
+    page.fill("#searchBox", "zzznotarealaspect")
+    page.wait_for_timeout(150)
+
+    assert page.text_content(".empty-hint") == "No sources match the current filters."
+
+
+def test_sources_pack_filter_hides_aspects_from_disabled_packs(live_server, page):
+    page.goto(f"{live_server}/sources")
+    page.wait_for_selector(".source-card")
+
+    def card_names():
+        return page.eval_on_selector_all(
+            ".source-card-header span", "els => els.map(el => el.textContent)"
+        )
+
+    assert "Nebrisum" in card_names()  # gregtech aspect, on by default (GTNH preset)
+    page.uncheck("#pack_gregtech")
+    page.wait_for_timeout(100)
+    assert "Nebrisum" not in card_names()
+    assert "Aer" in card_names()  # unaffected vanilla aspect
+
+
 # --- Metallurgic Perfection ---------------------------------------------------
 
 
@@ -323,3 +367,28 @@ def test_metallurgy_search_filters_rows_by_metal_name(live_server, page):
         "#metallurgyBody .metal-name", "els => els.map(el => el.textContent)"
     )
     assert names == ["Gold"]
+
+
+def test_metallurgy_shows_empty_hint_when_no_metal_matches_search(live_server, page):
+    page.goto(f"{live_server}/metallurgy")
+    page.wait_for_selector("#metallurgyBody tr")
+    page.fill("#searchBox", "zzznotarealmetal")
+    page.wait_for_timeout(150)
+
+    assert page.text_content(".empty-hint") == "No metals match the current filters."
+
+
+def test_metallurgy_pack_filter_hides_metals_needing_disabled_pack_aspects(live_server, page):
+    page.goto(f"{live_server}/metallurgy")
+    page.wait_for_selector("#metallurgyBody tr")
+
+    def metal_names():
+        return page.eval_on_selector_all(
+            "#metallurgyBody .metal-name", "els => els.map(el => el.textContent)"
+        )
+
+    assert "Iron" in metal_names()  # needs nebrisum (gregtech)
+    page.uncheck("#pack_gregtech")
+    page.wait_for_timeout(100)
+    assert "Iron" not in metal_names()
+    assert "Aluminum" in metal_names()  # needs only volatus + permutatio (vanilla)
