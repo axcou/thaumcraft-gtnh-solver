@@ -1,33 +1,121 @@
-# Thaumcraft Research Solver (GTNH)
+# Thaumcraft Research Toolkit (GTNH)
 
-A fast Python reimplementation of the Thaumcraft research-table hex board
-solver (the mini-game where you have to link aspects on a hexagonal grid),
-inspired by:
+A local web app that bundles everything you need for Thaumcraft research
+in GTNH: a hex-board research solver fast enough to never think twice
+about board size, plus five reference tools (aspect combinations, aspect
+sources, a full item-scan database, aspect-to-aspect connections, and
+Metallurgic Perfection recipes) so you're not alt-tabbing between wikis,
+spreadsheets, and NEI while you play.
 
-- [ythri/tcresearch](https://github.com/ythri/tcresearch/tree/gh-pages)
-- [SkilledAlpaca/universal_tc_research_solver](https://github.com/SkilledAlpaca/universal_tc_research_solver/)
+Started as a Python reimplementation of two existing tools --
+[ythri/tcresearch](https://github.com/ythri/tcresearch/tree/gh-pages) and
+[SkilledAlpaca/universal_tc_research_solver](https://github.com/SkilledAlpaca/universal_tc_research_solver/) --
+and grew into a small suite covering the rest of the research workflow.
 
-## Why a reimplementation
+## What it's for
 
-The reference JS solver (`universal_tc_research_solver`) `deepcopy()`s the
-**entire grid at every single step** of its backtracking, and explores the
-board cell by cell with a naive DFS -- this can get very slow (or even get
-stuck) on a moderately busy board.
+Thaumcraft's research table minigame -- linking revealed aspects on a
+hexagonal grid so every "base" aspect ends up in one connected group --
+gates a large chunk of GTNH's magic tech tree. Working it out by hand
+means knowing, for dozens of aspects, which ones are even allowed to sit
+next to each other (an aspect can only neighbor one of its own direct
+components, or something it's a component of), and that gets slow and
+error-prone fast on a busy board with several mod packs enabled.
+
+Even once you know *which* aspect you need, two more questions come up
+constantly:
+- What's a cheap, aspect-pure item to scan with a thaumometer to get it?
+- If I'm chasing Metallurgic Perfection, which aspects (and how many)
+  does *this* metal's nugget need infused into it?
+
+This app answers the first question (solve the board) instantly, and
+bundles reference tools for the second and third so the answer is a tab
+switch away instead of a wiki search.
+
+## The toolkit
+
+Six tabs, one local server:
+
+1. **Research Table Solver** -- the hex board solver itself.
+   - Pick a board size (3 to 6 -- the board regenerates automatically) and
+     which mods are active (the GTNH preset -- Vanilla TC, Forbidden
+     Magic, Gregtech, Magic Bees -- is on by default; Avaritia and a few
+     other GT:NH packs are also available).
+   - Drag an aspect from a side panel onto a cell to place an aspect
+     already revealed by the research in progress.
+   - Click a cell to clear it (aspect or bar); on an empty cell, that
+     bars/unbars it instead -- no separate mode needed.
+   - Click "Solve": the cells to fill in (and which aspect to place
+     there) are highlighted with a gold outline, computed in
+     milliseconds even on a full board (see "Why it's fast" below).
+   - "Export grid" / "Import grid" save and reload a board (size, active
+     mods, base/barred/solved cells) as a `.tcgrid` file -- a plain JSON
+     document under a distinct extension, so the file picker only ever
+     offers grid files. "Export image" instead saves a cropped PNG
+     snapshot of the board as currently drawn.
+2. **Connection Helper** -- pick a "from" and "to" aspect and a minimum
+   number of steps, and it finds the cheapest walk between them in the
+   combination graph (preferring aspects from your active mods) -- the
+   same adjacency rule the research table itself uses, so you can plan a
+   link before you're staring at the actual board.
+3. **Aspect Combination** -- a searchable reference of every one of the
+   72 tracked aspects and what it's made from (or "Primal aspect" if it
+   has no components), with a full recursive crafting-tree diagram down
+   to primal aspects for any aspect you pick.
+4. **Aspect Sources** -- a searchable, filterable, community-curated
+   reference of cheap, practical item sources for 62 aspects, one card
+   per aspect. Each entry shows its impurity count (how many *other*
+   aspects come along for the ride when you scan it); "Pure sources
+   only" keeps just the 0-impurity ones, "Especially good only" keeps the
+   source sheet's green (especially good/surprising) picks -- red-flagged
+   entries (pure, but hard to get) show up in both.
+5. **Item Aspect Lookup** -- searches the full GTNH item-scan database
+   (14,000+ items) by name and/or by a specific aspect, sorted purest
+   (fewest distinct aspects) first. Unlike Aspect Sources, this isn't
+   hand-curated for practicality -- it's the raw scan data, useful for
+   double-checking the curated list or finding an alternative source it
+   doesn't mention.
+6. **Metallurgic Perfection** -- a searchable table of all 77 tracked
+   metals and how many of which aspects each one's nugget needs to be
+   infused with, restricted to your active mods (a metal disappears if
+   any of its required aspects belongs to a disabled pack).
+
+Every page shares the same "Active mods" pack selector (with a one-click
+GTNH preset), so switching which addons you're playing with updates the
+solver, both aspect references, and the metallurgy table all at once.
+
+## Why it's fast
+
+The reference JS solver (`universal_tc_research_solver`) `deepcopy()`s
+the **entire grid at every single step** of its backtracking, and
+explores the board cell by cell with a naive DFS -- this can get very
+slow (or even get stuck) on a moderately busy board.
 
 This version replaces that with:
-- a **BFS** over `(cell, aspect)` states to connect two components -- since
-  every extra cell costs exactly 1, the first path BFS finds is already the
-  shortest one, no cell-by-cell trial and error needed;
-- a Steiner-tree heuristic (always connect the closest pair of components
-  first) to decide the order in which components get merged;
+- a **Dijkstra search** over `(cell, aspect)` states to connect two
+  components, prioritized by aspect complexity first and hop count
+  second -- so it favors simple, low-tier aspects over squeezing the
+  path into the fewest possible cells, matching how you'd actually want
+  to spend your revealed aspects;
+- a Steiner-tree heuristic (always connect the closest pair of
+  components first) to decide the order in which components get merged;
 - backtracking that only re-copies small dictionaries (components, used
   cells), never the whole grid.
 
-Result: the heaviest test board (radius 5, 8 base aspects, every GTNH pack
-enabled) solves in a few milliseconds (see
-`tests/test_solver.py::test_solve_speed_on_big_board`).
+Result: the heaviest test board (radius 5, 8 base aspects, every GTNH
+pack enabled) solves in a few milliseconds
+(`tests/unit/test_solver.py::test_solve_speed_on_big_board`).
 
-## Structure
+## Running it
+
+```
+pip install -r requirements.txt
+python -m tcsolver.webapp
+```
+
+Then open <http://localhost:5000>.
+
+## Project layout
 
 ```
 thaumcraft_gtnh/
@@ -47,8 +135,8 @@ thaumcraft_gtnh/
 │   │   ├── connections.html      # Connection Helper
 │   │   ├── combinations.html     # Aspect Combination
 │   │   ├── sources.html          # Aspect Sources
-│   │   ├── metallurgy.html       # Metallurgic Perfection
-│   │   └── item_lookup.html      # Item Aspect Lookup
+│   │   ├── item_lookup.html      # Item Aspect Lookup
+│   │   └── metallurgy.html       # Metallurgic Perfection
 │   └── static/
 │       ├── style.css
 │       ├── utils.js              # shared: capitalize(), icon-tile helper
@@ -61,10 +149,10 @@ thaumcraft_gtnh/
 │       ├── aspect-tree.js        # Aspect Combination: pan/zoom + tree diagram
 │       ├── combinations.js       # Aspect Combination: aspect list/search + init
 │       ├── aspect-sources.js     # Aspect Sources: card grid + filters + init
-│       ├── metallurgy.js         # Metallurgic Perfection: recipe table + search
 │       ├── item-lookup.js        # Item Aspect Lookup: search/filter/sort + init
+│       ├── metallurgy.js         # Metallurgic Perfection: recipe table + search
 │       ├── data/
-│       │   └── item_aspects.json # ~16k items x aspect quantities (generated)
+│       │   └── item_aspects.json # ~14k items x aspect quantities (generated)
 │       └── icons/                # 72 aspect SVGs (game-icons.net, CC BY 3.0)
 └── tests/
     ├── unit/               # pure Python, no Flask/network -- fast, run these most
@@ -80,13 +168,8 @@ thaumcraft_gtnh/
     └── e2e/
         ├── conftest.py            # live Flask server + Playwright fixtures
         └── test_browser.py        # tree rendering/pan-zoom, canvas interaction,
-                                    # grid import/export, connection helper
-```
-
-## Installation
-
-```
-pip install -r requirements.txt
+                                    # grid import/export, connection helper,
+                                    # aspect/pack filters on every reference page
 ```
 
 ## Running the tests
@@ -99,60 +182,16 @@ pytest tests/e2e                # full browser end-to-end
 ```
 
 `tests/e2e` drives the app through an actual browser (via Playwright) to
-check things the other two layers can't: the Aspect Combination tree's DOM
-structure and connector lines, wheel-zoom/drag-pan, canvas clicks and grid
-import/export on the Solver page, the GTNH pack preset, and the Connection
-Helper's result chain. It launches your system's installed Edge (falling
-back to Chrome, then Playwright's own Chromium) headlessly against a real
-instance of the Flask app on a throwaway port -- no `playwright install`
-needed as long as Edge or Chrome is present. If neither is found, those
-tests skip themselves instead of failing.
-
-## Running the web app
-
-```
-python -m tcsolver.webapp
-```
-
-Then open <http://localhost:5000>. The site has 6 tabs:
-
-- **Research Table Solver** -- the hex board solver.
-  - Pick a board size (3 to 6 -- the board regenerates automatically) and
-    which mods are active (the GTNH preset -- Vanilla TC, Forbidden Magic,
-    Gregtech, Magic Bees -- is on by default; Avaritia and a few other
-    GT:NH packs are also available).
-  - Drag an aspect from a side panel onto a cell to place an aspect already
-    revealed by the research in progress.
-  - Click a cell to clear it (aspect or bar); on an empty cell, that bars/
-    unbars it instead -- no separate mode needed.
-  - Click "Solve": the cells to fill in (and which aspect to place there)
-    are highlighted with a gold outline.
-  - "Export grid" / "Import grid" save and reload a board (size, active
-    mods, base/barred/solved cells) as a `.tcgrid` file -- a plain JSON
-    document under a distinct extension, so the file picker only ever
-    offers grid files. "Export image" instead saves a cropped PNG
-    snapshot of the board as currently drawn.
-- **Connection Helper** -- pick a "from" and "to" aspect and a minimum
-  number of steps, and it finds the cheapest walk between them in the
-  combination graph (preferring aspects from your active mods).
-- **Aspect Combination** -- a searchable reference of every aspect and
-  what it is made from (or "Primal aspect" if it has no components).
-- **Aspect Sources** -- a searchable, filterable reference of cheap item
-  sources for each aspect (community-curated), one card per aspect. Each
-  entry shows its impurity count; "Pure sources only" keeps just the
-  0-impurity ones, "Especially good only" keeps the sheet's green
-  (especially good/surprising) picks -- red-flagged entries (pure, but
-  hard to get) are shown in both.
-- **Item Aspect Lookup** -- searches the full GTNH item-scan database
-  (~16,000 items) by name and/or by a specific aspect, sorted purest
-  (fewest distinct aspects) first and capped to the top 300 matches.
-  Unlike Aspect Sources, this isn't hand-curated for practicality -- it's
-  the raw scan data, useful for double-checking the curated list or
-  finding an alternative source it doesn't mention.
-- **Metallurgic Perfection** -- a searchable table of every metal and how
-  many of which aspects its nugget needs to be infused with, restricted
-  to your active mods (a metal disappears if any of its required aspects
-  belongs to a disabled pack).
+check things the other two layers can't: the Aspect Combination tree's
+DOM structure and connector lines, wheel-zoom/drag-pan, canvas clicks and
+grid import/export on the Solver page, the GTNH pack preset, the
+Connection Helper's result chain, and the search/aspect/pack filters on
+Aspect Sources, Item Aspect Lookup, and Metallurgic Perfection. It
+launches your system's installed Edge (falling back to Chrome, then
+Playwright's own Chromium) headlessly against a real instance of the
+Flask app on a throwaway port -- no `playwright install` needed as long
+as Edge or Chrome is present. If neither is found, those tests skip
+themselves instead of failing.
 
 ## Icons
 
@@ -173,8 +212,8 @@ ones each sheet tab lists) and "Metallurgic Perfection Recipes".
 `tcsolver/static/data/item_aspects.json` (used by the Item Aspect Lookup
 page) is generated from the "GTNH Aspects" tab of a
 [separate, more exhaustive spreadsheet](https://docs.google.com/spreadsheets/d/1oaV9g5GoS_qkfZzKVrE85km2lsL8YieX_FZ9mA3bscg) --
-a raw item scan database (name -> exact aspect quantities) rather than a
-hand-picked "easiest source" list.
+a raw item scan database (name -> exact aspect quantities), deduplicated
+of exact-duplicate rows, rather than a hand-picked "easiest source" list.
 
 ## Using it as a library
 
