@@ -153,7 +153,7 @@ thaumcraft_gtnh/
 │       ├── metallurgy.js         # Metallurgic Perfection: recipe table + search
 │       ├── data/
 │       │   └── item_aspects.json # ~14k items x aspect quantities (generated)
-│       └── icons/                # 79 aspect SVGs (game-icons.net + 7 in-game sprites)
+│       └── icons/                # 79 aspect SVGs (69 vectorized in-game + 10 game-icons.net)
 └── tests/
     ├── unit/               # pure Python, no Flask/network -- fast, run these most
     │   ├── test_aspects.py       # ASPECT_TABLE/PACKS/complexity invariants
@@ -195,16 +195,22 @@ themselves instead of failing.
 
 ## Icons
 
-72 of the 79 aspect icons (`tcsolver/static/icons/*.svg`) come from
+69 of the 79 aspect icons (`tcsolver/static/icons/*.svg`) are vectorized
+from Thaumcraft's own official in-game aspect sprites -- extracted as
+embedded cell images from the "TC (Aspects)" tab of a GTNH guide
+spreadsheet (see below), isolated from their circular badge background,
+traced into clean SVG paths with [vtracer](https://github.com/visioncortex/vtracer),
+and recolored using this project's own per-aspect color instead of the
+source's plain white-on-black. This is both more visually authentic to
+Thaumcraft than a generic icon set and keeps the color-coding useful for
+telling aspects apart at a glance.
+
+The remaining 10 (aspects this spreadsheet doesn't cover: coralos,
+dreadia, tincturem, sanctus, exubitor, saxum, granum, mru, radiation,
+matrix) still come from
 [game-icons.net](https://game-icons.net/) (authors Lorc, Delapouite,
 Cathelineau -- [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)),
 via `universal_tc_research_solver`'s source list (`icon_sources.txt`).
-
-The remaining 7 (the Thaumic Tinkerer aspects) have no matching
-game-icons.net icon, so they're redrawn as flat vector icons matching the
-existing style, based on the mod's own in-game 32x32 sprites (extracted
-from a community spreadsheet's embedded images -- see below) rather than
-upscaling that pixel art directly.
 
 ## Reference data from community spreadsheets
 
@@ -223,14 +229,13 @@ of exact-duplicate rows, rather than a hand-picked "easiest source" list.
 
 The 7 Thaumic Tinkerer aspects (aequalitas, astrum, caelum, gloria,
 primordium, tabernus, vesania -- missing from the original port, see
-`tcsolver/aspects.py`'s module docstring) and their icons were sourced
-from the "TC (Aspects)" tab of a
-[GTNH guide spreadsheet](https://docs.google.com/spreadsheets/d/1rsB5OOAkFgJ_lzhtVzWZc2aNCSo0e6lRhJG8Po7NZtY)
-and the "Aspects" tab of
-[another community spreadsheet](https://docs.google.com/spreadsheets/d/1YE6oZvI5AfakT2vtM1tGDJgXScV463dvgP8XPaXiC-k)
-(for the icons themselves, embedded as cell images); 5 of the 7 are also
-directly referenced by name in GTNH's own GregTech source (`TCAspects.java`),
-confirming they're live aspects in the pack.
+`tcsolver/aspects.py`'s module docstring) come from the "TC (Aspects)"
+tab of a
+[GTNH guide spreadsheet](https://docs.google.com/spreadsheets/d/1rsB5OOAkFgJ_lzhtVzWZc2aNCSo0e6lRhJG8Po7NZtY);
+5 of the 7 are also directly referenced by name in GTNH's own GregTech
+source (`TCAspects.java`), confirming they're live aspects in the pack.
+That same tab's embedded cell images are also where the 69 vectorized
+aspect icons (see "Icons" above) come from.
 
 ## Using it as a library
 
