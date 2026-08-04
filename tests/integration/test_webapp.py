@@ -25,8 +25,8 @@ def client():
         ("/connections", "Connection Helper"),
         ("/combinations", "Aspect Combination"),
         ("/sources", "Aspect Sources"),
-        ("/metallurgy", "Metallurgic Perfection"),
         ("/item-lookup", "Item Aspect Lookup"),
+        ("/metallurgy", "Metallurgic Perfection"),
     ],
 )
 def test_each_page_loads_and_shows_its_heading(client, path, heading):

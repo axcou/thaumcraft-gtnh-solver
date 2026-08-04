@@ -49,14 +49,18 @@ def cache_icons_aggressively(response: Any) -> Any:
         response.cache_control.max_age = 60 * 60 * 24 * 7
     return response
 
-# The site's tab bar: one entry per page, in display order.
+# The site's tab bar: one entry per page, in display order -- grouped as
+# board-solving tools first, then aspect-sourcing references (Combination,
+# Sources, Item Lookup all answer "how do I get/make this aspect", in
+# increasing order of raw-ness), then Metallurgic Perfection last since
+# it's a different topic entirely (metal infusion, not aspect sourcing).
 NAV = [
     {"slug": "solver", "path": "/", "label": "Research Table Solver"},
     {"slug": "connections", "path": "/connections", "label": "Connection Helper"},
     {"slug": "combinations", "path": "/combinations", "label": "Aspect Combination"},
     {"slug": "sources", "path": "/sources", "label": "Aspect Sources"},
-    {"slug": "metallurgy", "path": "/metallurgy", "label": "Metallurgic Perfection"},
     {"slug": "item-lookup", "path": "/item-lookup", "label": "Item Aspect Lookup"},
+    {"slug": "metallurgy", "path": "/metallurgy", "label": "Metallurgic Perfection"},
 ]
 
 

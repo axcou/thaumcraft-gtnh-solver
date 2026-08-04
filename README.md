@@ -143,16 +143,16 @@ Then open <http://localhost:5000>. The site has 6 tabs:
   0-impurity ones, "Especially good only" keeps the sheet's green
   (especially good/surprising) picks -- red-flagged entries (pure, but
   hard to get) are shown in both.
-- **Metallurgic Perfection** -- a searchable table of every metal and how
-  many of which aspects its nugget needs to be infused with, restricted
-  to your active mods (a metal disappears if any of its required aspects
-  belongs to a disabled pack).
 - **Item Aspect Lookup** -- searches the full GTNH item-scan database
   (~16,000 items) by name and/or by a specific aspect, sorted purest
   (fewest distinct aspects) first and capped to the top 300 matches.
   Unlike Aspect Sources, this isn't hand-curated for practicality -- it's
   the raw scan data, useful for double-checking the curated list or
   finding an alternative source it doesn't mention.
+- **Metallurgic Perfection** -- a searchable table of every metal and how
+  many of which aspects its nugget needs to be infused with, restricted
+  to your active mods (a metal disappears if any of its required aspects
+  belongs to a disabled pack).
 
 ## Icons
 
