@@ -122,13 +122,18 @@ header p {
   margin: 0;
 }
 
-#status {
+#status,
+#resultCount {
   margin: 0 auto 0 0; /* pins it to the left when its parent right-aligns
                          everything else, e.g. #toolbar's flex-end group */
   display: flex;
   align-items: center;
   font-size: 0.85rem;
   white-space: pre-line;
+}
+
+#resultCount {
+  color: #9a968a;
 }
 
 #status.error {
@@ -770,33 +775,40 @@ canvas {
   color: #ff9a9a;
 }
 
-/* --- Metallurgic Perfection page --- */
+/* --- Metallurgic Perfection & Item Aspect Lookup pages (shared table look) --- */
 
-#metallurgyTableWrapper {
+.data-table-wrapper {
   padding: 16px 20px;
-  overflow-x: auto;
+  max-height: 70vh;
+  overflow: auto;
 }
 
-#metallurgyTable {
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  background: #1c1d1f;
+}
+
+.data-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-#metallurgyTable th,
-#metallurgyTable td {
+.data-table th,
+.data-table td {
   text-align: left;
   padding: 8px 12px;
   border-bottom: 1px solid #333;
 }
 
-#metallurgyTable th {
+.data-table th {
   color: #9a968a;
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-#metallurgyTable tbody tr:hover {
+.data-table tbody tr:hover {
   background: #202124;
 }
 

@@ -26,6 +26,7 @@ def client():
         ("/combinations", "Aspect Combination"),
         ("/sources", "Aspect Sources"),
         ("/metallurgy", "Metallurgic Perfection"),
+        ("/item-lookup", "Item Aspect Lookup"),
     ],
 )
 def test_each_page_loads_and_shows_its_heading(client, path, heading):
@@ -203,3 +204,11 @@ def test_css_and_js_are_not_cached_aggressively(client):
         resp = client.get(path)
         assert resp.status_code == 200
         assert "no-cache" in resp.headers["Cache-Control"]
+
+
+def test_item_aspects_dataset_is_served_as_json(client):
+    resp = client.get("/static/data/item_aspects.json")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert set(data) == {"aspects", "items"}
+    assert len(data["items"]) > 10_000

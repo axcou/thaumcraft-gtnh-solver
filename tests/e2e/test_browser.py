@@ -392,3 +392,61 @@ def test_metallurgy_pack_filter_hides_metals_needing_disabled_pack_aspects(live_
     page.wait_for_timeout(100)
     assert "Iron" not in metal_names()
     assert "Aluminum" in metal_names()  # needs only volatus + permutatio (vanilla)
+
+
+# --- Item Aspect Lookup --------------------------------------------------------
+
+
+def test_item_lookup_shows_a_capped_purest_first_default_list(live_server, page):
+    page.goto(f"{live_server}/item-lookup")
+    page.wait_for_selector("#lookupBody tr")
+
+    rows = page.query_selector_all("#lookupBody tr")
+    assert len(rows) == 300  # RESULT_CAP
+    assert "Showing 300 of" in page.text_content("#resultCount")
+
+    chip_counts = page.eval_on_selector_all(
+        "#lookupBody tr", "els => els.map(tr => tr.querySelectorAll('.req-chip').length)"
+    )
+    assert chip_counts == sorted(chip_counts)  # purest (fewest aspects) first
+    assert chip_counts[0] == 1
+
+
+def test_item_lookup_search_filters_by_item_name(live_server, page):
+    page.goto(f"{live_server}/item-lookup")
+    page.wait_for_selector("#lookupBody tr")
+    page.fill("#searchBox", "bone")
+    page.wait_for_timeout(150)
+
+    names = page.eval_on_selector_all(
+        "#lookupBody .metal-name", "els => els.map(el => el.textContent)"
+    )
+    assert names  # non-empty
+    assert all("bone" in n.lower() for n in names)
+
+
+def test_item_lookup_aspect_filter_shows_only_matching_items(live_server, page):
+    page.goto(f"{live_server}/item-lookup")
+    page.wait_for_selector("#lookupBody tr")
+    page.select_option("#aspectFilter", "telum")
+    page.wait_for_timeout(150)
+
+    chip_labels = page.eval_on_selector_all(
+        "#lookupBody tr", "els => els.map(tr => Array.from(tr.querySelectorAll('.req-chip span')).map(s => s.textContent))"
+    )
+    assert chip_labels
+    assert all(any("Telum" in label for label in row) for row in chip_labels)
+    # the purest matches (single-aspect Telum items) sort to the very top
+    assert chip_labels[0] == ["1× Telum"]
+
+
+def test_item_lookup_pack_filter_hides_items_needing_disabled_pack_aspects(live_server, page):
+    page.goto(f"{live_server}/item-lookup")
+    page.wait_for_selector("#lookupBody tr")
+    page.select_option("#aspectFilter", "nebrisum")
+    page.wait_for_timeout(150)
+    assert "matches" in page.text_content("#resultCount")
+
+    page.uncheck("#pack_gregtech")
+    page.wait_for_timeout(150)
+    assert page.text_content(".empty-hint") == "No items match the current filters."

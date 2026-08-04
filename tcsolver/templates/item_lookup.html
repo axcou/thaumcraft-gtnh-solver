@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Item Aspect Lookup - Thaumcraft Research Solver{% endblock %}
+{% block content %}
+<header>
+  <h1>Item Aspect Lookup</h1>
+  <p>
+    Search the full GTNH item scan database (16k+ items) by name or by
+    aspect. Results are sorted purest first (fewest total aspects).
+  </p>
+</header>
+
+<div id="toolbar">
+  <input type="text" id="searchBox" placeholder="Search items..." />
+  <label>
+    Aspect
+    <select id="aspectFilter"><option value="">Any</option></select>
+  </label>
+  <div id="resultCount"></div>
+</div>
+
+<div class="data-table-wrapper">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Aspects</th>
+      </tr>
+    </thead>
+    <tbody id="lookupBody"></tbody>
+  </table>
+</div>
+
+<fieldset class="panel-fieldset">
+  <legend>Active mods</legend>
+  <div id="packs"></div>
+</fieldset>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='utils.js') }}?v={{ static_version('utils.js') }}"></script>
+<script src="{{ url_for('static', filename='packs.js') }}?v={{ static_version('packs.js') }}"></script>
+<script src="{{ url_for('static', filename='item-lookup.js') }}?v={{ static_version('item-lookup.js') }}"></script>
+{% endblock %}

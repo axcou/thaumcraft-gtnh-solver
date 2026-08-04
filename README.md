@@ -47,7 +47,8 @@ thaumcraft_gtnh/
 │   │   ├── connections.html      # Connection Helper
 │   │   ├── combinations.html     # Aspect Combination
 │   │   ├── sources.html          # Aspect Sources
-│   │   └── metallurgy.html       # Metallurgic Perfection
+│   │   ├── metallurgy.html       # Metallurgic Perfection
+│   │   └── item_lookup.html      # Item Aspect Lookup
 │   └── static/
 │       ├── style.css
 │       ├── utils.js              # shared: capitalize(), icon-tile helper
@@ -61,6 +62,9 @@ thaumcraft_gtnh/
 │       ├── combinations.js       # Aspect Combination: aspect list/search + init
 │       ├── aspect-sources.js     # Aspect Sources: card grid + filters + init
 │       ├── metallurgy.js         # Metallurgic Perfection: recipe table + search
+│       ├── item-lookup.js        # Item Aspect Lookup: search/filter/sort + init
+│       ├── data/
+│       │   └── item_aspects.json # ~16k items x aspect quantities (generated)
 │       └── icons/                # 72 aspect SVGs (game-icons.net, CC BY 3.0)
 └── tests/
     ├── unit/               # pure Python, no Flask/network -- fast, run these most
@@ -69,7 +73,8 @@ thaumcraft_gtnh/
     │   ├── test_solver.py        # board-solving algorithm
     │   ├── test_connections.py   # aspect-to-aspect connection finder
     │   ├── test_sources.py       # ASPECT_SOURCES invariants
-    │   └── test_metallurgy.py    # METALLURGIC_RECIPES invariants
+    │   ├── test_metallurgy.py    # METALLURGIC_RECIPES invariants
+    │   └── test_item_aspects_data.py  # item_aspects.json invariants
     ├── integration/
     │   └── test_webapp.py        # Flask routes/JSON via test_client, no live server
     └── e2e/
@@ -109,7 +114,7 @@ tests skip themselves instead of failing.
 python -m tcsolver.webapp
 ```
 
-Then open <http://localhost:5000>. The site has 5 tabs:
+Then open <http://localhost:5000>. The site has 6 tabs:
 
 - **Research Table Solver** -- the hex board solver.
   - Pick a board size (3 to 6 -- the board regenerates automatically) and
@@ -142,6 +147,12 @@ Then open <http://localhost:5000>. The site has 5 tabs:
   many of which aspects its nugget needs to be infused with, restricted
   to your active mods (a metal disappears if any of its required aspects
   belongs to a disabled pack).
+- **Item Aspect Lookup** -- searches the full GTNH item-scan database
+  (~16,000 items) by name and/or by a specific aspect, sorted purest
+  (fewest distinct aspects) first and capped to the top 300 matches.
+  Unlike Aspect Sources, this isn't hand-curated for practicality -- it's
+  the raw scan data, useful for double-checking the curated list or
+  finding an alternative source it doesn't mention.
 
 ## Icons
 
@@ -150,7 +161,7 @@ The aspect icons (`tcsolver/static/icons/*.svg`) come from
 Cathelineau -- [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)),
 via `universal_tc_research_solver`'s source list (`icon_sources.txt`).
 
-## Reference data from the community spreadsheet
+## Reference data from community spreadsheets
 
 `tcsolver/sources.py` and `tcsolver/metallurgy.py` are straight ports of
 two tabs of the community-maintained
@@ -158,6 +169,12 @@ two tabs of the community-maintained
 "EasyPure Aspect Sources" itself (including its green/especially-good and
 red/pure-but-hard highlighting -- neither covers every aspect, only the
 ones each sheet tab lists) and "Metallurgic Perfection Recipes".
+
+`tcsolver/static/data/item_aspects.json` (used by the Item Aspect Lookup
+page) is generated from the "GTNH Aspects" tab of a
+[separate, more exhaustive spreadsheet](https://docs.google.com/spreadsheets/d/1oaV9g5GoS_qkfZzKVrE85km2lsL8YieX_FZ9mA3bscg) --
+a raw item scan database (name -> exact aspect quantities) rather than a
+hand-picked "easiest source" list.
 
 ## Using it as a library
 

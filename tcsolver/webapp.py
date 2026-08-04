@@ -56,6 +56,7 @@ NAV = [
     {"slug": "combinations", "path": "/combinations", "label": "Aspect Combination"},
     {"slug": "sources", "path": "/sources", "label": "Aspect Sources"},
     {"slug": "metallurgy", "path": "/metallurgy", "label": "Metallurgic Perfection"},
+    {"slug": "item-lookup", "path": "/item-lookup", "label": "Item Aspect Lookup"},
 ]
 
 
@@ -82,6 +83,11 @@ def sources_page() -> Any:
 @app.get("/metallurgy")
 def metallurgy_page() -> Any:
     return render_template("metallurgy.html", active="metallurgy", nav=NAV)
+
+
+@app.get("/item-lookup")
+def item_lookup_page() -> Any:
+    return render_template("item_lookup.html", active="item-lookup", nav=NAV)
 
 
 @app.get("/aspects")
