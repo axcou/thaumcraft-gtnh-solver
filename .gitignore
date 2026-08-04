@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# virtual envs
+.venv/
+venv/
+env/
+
+# Playwright test artifacts (tests/test_browser.py uses the system
+# browser directly, so these usually won't appear, but ignore them in
+# case a reporter/trace is ever enabled)
+test-results/
+playwright-report/
+
+# editor / OS cruft
+.DS_Store
+Thumbs.db
+
+# personal, machine-specific -- not the shared project config
+.claude/settings.local.json

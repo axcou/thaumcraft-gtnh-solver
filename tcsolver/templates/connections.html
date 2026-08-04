@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Connection Helper - Thaumcraft Research Solver{% endblock %}
+{% block content %}
+<header>
+  <h1>Connection Helper</h1>
+  <p>
+    Find the cheapest way to link two aspects in the research table, using
+    at least the given number of steps.
+  </p>
+</header>
+
+<div id="workspace" class="align-stretch">
+  <div id="connectionControls">
+    <div class="field-group">
+      <label><span class="field-label">From</span><select id="fromSelect"></select></label>
+      <label><span class="field-label">To</span><select id="toSelect"></select></label>
+      <label><span class="field-label">Min steps</span><input type="number" id="minSteps" min="1" max="10" value="1" /></label>
+    </div>
+    <button id="findBtn">Find connection</button>
+    <div id="status"></div>
+  </div>
+
+  <div id="resultWrapper">
+    <div id="stepBadge" class="pill"></div>
+    <div id="resultChain"></div>
+    <div id="hoverBreakdown"></div>
+  </div>
+</div>
+
+<fieldset class="panel-fieldset">
+  <legend>Active mods</legend>
+  <div id="packs"></div>
+</fieldset>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='utils.js') }}?v={{ static_version('utils.js') }}"></script>
+<script src="{{ url_for('static', filename='packs.js') }}?v={{ static_version('packs.js') }}"></script>
+<script src="{{ url_for('static', filename='connections.js') }}?v={{ static_version('connections.js') }}"></script>
+{% endblock %}

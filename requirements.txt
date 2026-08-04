@@ -1,0 +1,8 @@
+flask>=3.0
+pytest>=8.0
+
+# For the Playwright browser tests (tests/test_browser.py). They drive
+# the system-installed Edge/Chrome via `channel=`, so `playwright install`
+# is not required -- just having Edge or Chrome on the machine is enough.
+# The tests skip themselves if no usable browser is found.
+playwright>=1.40

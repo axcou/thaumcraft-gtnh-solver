@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Aspect Combination - Thaumcraft Research Solver{% endblock %}
+{% block content %}
+<header>
+  <h1>Aspect Combination</h1>
+  <p>Pick an aspect to see its full crafting tree, down to primal aspects.</p>
+</header>
+
+<div id="workspace" class="align-stretch">
+  <div id="combinationControls">
+    <input type="text" id="searchBox" placeholder="Search aspects..." />
+    <div id="combinationList"></div>
+  </div>
+
+  <div id="treeWrapper">
+    <div id="treeDiagram" class="tree-diagram"></div>
+  </div>
+</div>
+
+<fieldset class="panel-fieldset">
+  <legend>Active mods</legend>
+  <div id="packs"></div>
+</fieldset>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='utils.js') }}?v={{ static_version('utils.js') }}"></script>
+<script src="{{ url_for('static', filename='packs.js') }}?v={{ static_version('packs.js') }}"></script>
+<script src="{{ url_for('static', filename='aspect-tree.js') }}?v={{ static_version('aspect-tree.js') }}"></script>
+<script src="{{ url_for('static', filename='combinations.js') }}?v={{ static_version('combinations.js') }}"></script>
+{% endblock %}

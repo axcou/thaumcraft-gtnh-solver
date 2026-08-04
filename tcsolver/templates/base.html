@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>{% block title %}Thaumcraft Research Solver (GTNH){% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ static_version('style.css') }}" />
+</head>
+<body class="{{ 'no-page-scroll' if active == 'combinations' else '' }}">
+<div id="app">
+  <nav id="tabs">
+    {% for page in nav %}
+    <a class="tab{{ ' active' if page.slug == active else '' }}" href="{{ page.path }}">{{ page.label }}</a>
+    {% endfor %}
+  </nav>
+
+  {% block content %}{% endblock %}
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

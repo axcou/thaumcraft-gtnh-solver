@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Research Table Solver - Thaumcraft Research Solver{% endblock %}
+{% block content %}
+<header>
+  <h1>Research Table Solver</h1>
+  <p>
+    Drag an aspect from a side panel onto a cell to place it. Click a cell
+    to clear it (or to bar/unbar it if it is empty).
+  </p>
+</header>
+
+<div id="toolbar">
+  <div id="status"></div>
+  <label>
+    Size
+    <select id="size">
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5" selected>5</option>
+      <option value="6">6</option>
+    </select>
+  </label>
+  <button id="clearBoard" class="secondary">Clear all</button>
+  <button id="exportGridBtn" class="secondary">Export grid</button>
+  <button id="importGridBtn" class="secondary">Import grid</button>
+  <input type="file" id="importGridInput" accept=".tcgrid" hidden />
+  <button id="exportBtn" class="secondary">Export image</button>
+  <button id="solveBtn">Solve</button>
+</div>
+
+<div id="workspace">
+  <div id="aspectsLeft" class="aspect-column"></div>
+  <div id="board-wrapper">
+    <canvas id="board" width="900" height="900"></canvas>
+  </div>
+  <div id="aspectsRight" class="aspect-column"></div>
+</div>
+
+<fieldset class="panel-fieldset">
+  <legend>Active mods</legend>
+  <div id="packs"></div>
+</fieldset>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='utils.js') }}?v={{ static_version('utils.js') }}"></script>
+<script src="{{ url_for('static', filename='packs.js') }}?v={{ static_version('packs.js') }}"></script>
+<script src="{{ url_for('static', filename='hexboard.js') }}?v={{ static_version('hexboard.js') }}"></script>
+<script src="{{ url_for('static', filename='aspect-palette.js') }}?v={{ static_version('aspect-palette.js') }}"></script>
+<script src="{{ url_for('static', filename='grid-io.js') }}?v={{ static_version('grid-io.js') }}"></script>
+<script src="{{ url_for('static', filename='solver.js') }}?v={{ static_version('solver.js') }}"></script>
+{% endblock %}

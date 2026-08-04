@@ -1,0 +1,681 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #1c1d1f;
+  color: #e8e6df;
+  display: flex;
+  justify-content: center;
+}
+
+/* Fixed to the Research Table Solver page's own natural width (its
+   3-column workspace: 2 * 400px aspect columns + the board-wrapper sized
+   for the biggest grid [542px canvas + 2 * 24px padding] + gaps/padding),
+   so every page is exactly as wide as the Solver page, not just its own
+   content's width. Children stretch to fill it (align-items: stretch). */
+#app {
+  width: 1462px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Opt-in, page-specific: fills the viewport exactly and lets #workspace
+   (not the page) absorb the remaining height, so pages like Aspect
+   Combination -- whose panels already scroll internally -- never also
+   scroll as a whole page. */
+body.no-page-scroll {
+  height: 100vh;
+  overflow: hidden;
+}
+
+body.no-page-scroll #app {
+  height: 100%;
+}
+
+body.no-page-scroll #workspace {
+  flex: 1;
+  min-height: 0;
+}
+
+body.no-page-scroll #combinationControls,
+body.no-page-scroll #treeWrapper {
+  max-height: none;
+}
+
+/* --- top navigation: one tab per page --- */
+
+#tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 12px;
+  background: #141516;
+  border-bottom: 1px solid #333;
+  border-radius: 6px 6px 0 0;
+}
+
+.tab {
+  padding: 10px 16px;
+  color: #9a968a;
+  text-decoration: none;
+  font-size: 0.85rem;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: #e8e6df;
+}
+
+.tab.active {
+  color: #baf6ff;
+  border-bottom-color: #2c6f7a;
+  font-weight: 600;
+}
+
+header {
+  padding: 12px 20px;
+  background: #141516;
+  border-bottom: 1px solid #333;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+header p {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #9a968a;
+}
+
+/* --- top toolbar: size selector, actions --- */
+
+#toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  min-height: 44px;
+  padding: 10px 20px;
+  background: #202124;
+  border-bottom: 1px solid #333;
+  border-radius: 0 0 6px 6px;
+  flex-wrap: wrap;
+}
+
+#toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+#status {
+  margin: 0 auto 0 0; /* pins it to the left when its parent right-aligns
+                         everything else, e.g. #toolbar's flex-end group */
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  white-space: pre-line;
+}
+
+#status.error {
+  color: #ff8a8a;
+}
+
+#status.ok {
+  color: #9cff9c;
+}
+
+select,
+input[type="text"],
+input[type="number"] {
+  background: #26272a;
+  color: #e8e6df;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 0.9rem;
+}
+
+input[type="number"] {
+  width: 70px;
+}
+
+button {
+  background: #2c6f7a;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #38899a;
+}
+
+button.secondary {
+  background: #3a3b3d;
+}
+
+button.secondary:hover {
+  background: #4a4b4d;
+}
+
+/* --- 3-column workspace: aspects | board | aspects --- */
+
+#workspace {
+  display: flex;
+  gap: 16px;
+  padding: 16px 20px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* Opt-in modifier for pages whose columns should all match height (e.g.
+   Connection Helper), instead of each sizing to its own content. */
+#workspace.align-stretch {
+  align-items: stretch;
+}
+
+.aspect-column {
+  width: 400px;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  align-content: start;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* Square aspect tiles: aspect-ratio keeps them square at any column width. */
+.aspect-icon {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 4px;
+  background: #26272a;
+  cursor: grab;
+  user-select: none;
+  text-align: center;
+  overflow: hidden;
+}
+
+.aspect-icon:hover {
+  background: #33343a;
+}
+
+.aspect-icon.dragging {
+  opacity: 0.4;
+}
+
+.aspect-icon img {
+  width: 52%;
+  height: 52%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.aspect-icon span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #baf6ff;
+  pointer-events: none;
+  line-height: 1.1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Sized to fit the biggest possible grid (the canvas is always rendered
+   at that fixed size) plus a padding margin -- it never grows or shrinks
+   with the current board size or the viewport. */
+#board-wrapper {
+  flex: 0 0 auto;
+  padding: 24px;
+  overflow: auto;
+  background: #141516;
+  border-radius: 6px;
+  border: 1px solid #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  display: block;
+}
+
+/* --- Connection Helper: controls column + merged result panel --- */
+
+#connectionControls {
+  width: 400px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Center the compact form as one group within the stretched height,
+     instead of pinning it to the top (dead space below) or spreading its
+     few pieces apart with huge gaps. */
+  justify-content: center;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#connectionControls label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+/* Fixed-width label column so every field's input starts at the same x,
+   instead of drifting with how long each label's text happens to be. */
+.field-label {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+#connectionControls select,
+#connectionControls input[type="number"] {
+  flex: 1;
+  width: auto;
+}
+
+#resultWrapper {
+  flex: 1;
+  min-height: 320px;
+  position: relative;
+  padding: 24px;
+  background: #141516;
+  border-radius: 6px;
+  border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.pill {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #2c6f7a;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+/* No content yet (before the first search) -- don't render an empty blob. */
+.pill:empty {
+  display: none;
+}
+
+#resultChain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Floats near the cursor while hovering a chain aspect, instead of taking
+   up its own space in the panel -- position is set from JS on mousemove.
+   The visual box itself comes from the .combo-card placed inside it. */
+#hoverBreakdown {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  display: none;
+}
+
+#hoverBreakdown .combo-card {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+
+.chain-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.chain-item img {
+  width: 48px;
+  height: 48px;
+}
+
+.chain-item span {
+  font-size: 0.75rem;
+  color: #baf6ff;
+}
+
+.chain-arrow {
+  color: #9a968a;
+  font-size: 1.2rem;
+}
+
+/* --- generic bordered panel, used for the pack/addon selector and other
+   info boxes --- */
+
+.panel-fieldset {
+  margin: 0 0 20px 0;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.panel-fieldset legend {
+  color: #baf6ff;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.packs-list {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.packs-list label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+/* --- Aspect Combination page --- */
+
+#combinationControls {
+  width: 400px;
+  flex-shrink: 0;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#combinationList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+/* Each row is its own small card: the aspect on top, its recipe below --
+   stacked instead of crammed into one line, so it stays readable at the
+   column's width. */
+.aspect-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #202124;
+  border: 1px solid #333;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.aspect-card:hover {
+  background: #26272a;
+}
+
+.aspect-card.selected {
+  background: #2c6f7a;
+  border-color: #2c6f7a;
+}
+
+.aspect-card-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.aspect-card-main img {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.aspect-card-recipe {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-left: 4px;
+  font-size: 0.8rem;
+  color: #baf6ff;
+}
+
+.aspect-card-recipe img {
+  width: 20px;
+  height: 20px;
+}
+
+.aspect-card-recipe .combo-equals,
+.aspect-card-recipe .combo-plus {
+  color: #9a968a;
+  font-size: 0.85rem;
+}
+
+.aspect-card-recipe.combo-primal {
+  color: #9a968a;
+  font-style: italic;
+  padding-left: 0;
+}
+
+/* Pan & zoom viewport: fixed-size window, no native scrollbars -- JS
+   moves/scales #treeDiagram inside it via a CSS transform instead
+   (wheel = zoom, drag = pan). */
+#treeWrapper {
+  flex: 1;
+  min-height: 320px;
+  max-height: 80vh;
+  position: relative;
+  background: #141516;
+  border: 1px solid #333;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+#treeWrapper.dragging {
+  cursor: grabbing;
+}
+
+/* Pure-CSS org-chart tree: each <li> draws a half-border stub that, next
+   to its sibling's other half, forms the horizontal connector, and each
+   <ul> nested inside an <li> draws the vertical stem up to its parent.
+   Every aspect here has either 0 or 2 components, so there's never a
+   lone middle child to special-case.
+
+   Siblings are laid out with flex, not float+shrink-to-fit-inline-block:
+   the float version's width came from the browser guessing how wide the
+   floated content needed to be, and with two unevenly-sized subtrees
+   that guess could come up short, silently dropping the second child to
+   a new line with no visible connector to it at all. Flex distributes
+   the row's width properly regardless of how wide each subtree is. */
+.tree-diagram {
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.tree-diagram ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.tree-diagram li {
+  flex-shrink: 0;
+  text-align: center;
+  position: relative;
+  padding: 28px 12px 0 12px;
+}
+
+.tree-diagram li > ul {
+  padding-top: 28px;
+  position: relative;
+}
+
+.tree-diagram li > ul::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 1px solid #444;
+  height: 28px;
+}
+
+.tree-diagram li::before,
+.tree-diagram li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 50%;
+  width: 50%;
+  height: 28px;
+  border-top: 1px solid #444;
+}
+
+.tree-diagram li::after {
+  right: auto;
+  left: 50%;
+  border-left: 1px solid #444;
+}
+
+/* Remove only the *outward-pointing* horizontal stub past the first/last
+   child -- not the whole border. ::after also carries the vertical drop
+   down to that child's own box (its border-left); wiping the whole
+   border there (as `border: 0 none` would) silently deleted the last
+   child's connector down to itself along with the stub. */
+.tree-diagram li:first-child::before {
+  border: 0 none;
+}
+
+.tree-diagram li:last-child::after {
+  border-top: 0 none;
+}
+
+.tree-diagram > ul > li {
+  padding-top: 0;
+}
+
+.tree-diagram > ul > li::before,
+.tree-diagram > ul > li::after {
+  display: none;
+}
+
+.tree-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: #202124;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  min-width: 56px;
+}
+
+.tree-box img {
+  width: 30px;
+  height: 30px;
+}
+
+.tree-box span {
+  font-size: 0.68rem;
+  color: #baf6ff;
+  white-space: nowrap;
+}
+
+.combo-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  background: #202124;
+  border: 1px solid #333;
+  border-radius: 6px;
+}
+
+.combo-result,
+.combo-component {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.combo-result {
+  width: 160px;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.combo-result img,
+.combo-component img {
+  width: 28px;
+  height: 28px;
+}
+
+.combo-equals,
+.combo-plus {
+  color: #9a968a;
+  font-size: 1.1rem;
+}
+
+.combo-components {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.combo-primal {
+  color: #9a968a;
+  font-style: italic;
+  font-size: 0.85rem;
+}
