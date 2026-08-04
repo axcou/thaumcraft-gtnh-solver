@@ -217,7 +217,7 @@ def test_gtnh_preset_checks_the_expected_packs(live_server, page):
         "#packs input[type=checkbox]",
         "els => els.filter(el => el.checked).map(el => el.value)",
     )
-    assert set(checked) == {"vanilla_tc", "gregtech", "forbidden_magic", "magic_bees"}
+    assert set(checked) == {"vanilla_tc", "gregtech", "forbidden_magic", "magic_bees", "thaumic_tinkerer"}
 
 
 def test_gtnh_preset_is_checked_by_default_on_load(live_server, page):
@@ -227,7 +227,7 @@ def test_gtnh_preset_is_checked_by_default_on_load(live_server, page):
         "#packs input[type=checkbox]",
         "els => els.filter(el => el.checked).map(el => el.value)",
     )
-    assert set(checked) == {"vanilla_tc", "gregtech", "forbidden_magic", "magic_bees"}
+    assert set(checked) == {"vanilla_tc", "gregtech", "forbidden_magic", "magic_bees", "thaumic_tinkerer"}
 
 
 # --- Connection Helper --------------------------------------------------------

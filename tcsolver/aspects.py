@@ -218,7 +218,9 @@ PACKS: Dict[str, List[str]] = {
 
 # The GTNH preset (see packs.js's GTNH_PRESET) doubles as the default
 # selection on every page's first load.
-DEFAULT_PACKS: List[str] = ["vanilla_tc", "gregtech", "forbidden_magic", "magic_bees"]
+DEFAULT_PACKS: List[str] = [
+    "vanilla_tc", "gregtech", "forbidden_magic", "magic_bees", "thaumic_tinkerer",
+]
 
 ALL_ASPECTS: FrozenSet[str] = frozenset(ASPECT_TABLE)
 

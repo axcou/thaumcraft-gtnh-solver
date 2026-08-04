@@ -2,7 +2,7 @@
 // plus one checkbox per pack. Included as a plain <script> before each
 // page's own script, which calls renderPackSelector(...).
 
-const GTNH_PRESET = ["vanilla_tc", "gregtech", "forbidden_magic", "magic_bees"];
+const GTNH_PRESET = ["vanilla_tc", "gregtech", "forbidden_magic", "magic_bees", "thaumic_tinkerer"];
 
 function renderPackSelector(container, aspectData, onChange) {
   container.innerHTML = "";

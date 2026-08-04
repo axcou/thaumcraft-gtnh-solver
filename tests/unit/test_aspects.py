@@ -115,5 +115,5 @@ def test_default_packs_is_the_gtnh_preset():
     # Every page must open with the same GTNH preset pre-checked (see
     # packs.js's GTNH_PRESET) -- not just vanilla_tc.
     assert set(aspects.DEFAULT_PACKS) == {
-        "vanilla_tc", "gregtech", "forbidden_magic", "magic_bees",
+        "vanilla_tc", "gregtech", "forbidden_magic", "magic_bees", "thaumic_tinkerer",
     }

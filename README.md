@@ -39,8 +39,8 @@ Six tabs, one local server:
 1. **Research Table Solver** -- the hex board solver itself.
    - Pick a board size (3 to 6 -- the board regenerates automatically) and
      which mods are active (the GTNH preset -- Vanilla TC, Forbidden
-     Magic, Gregtech, Magic Bees -- is on by default; Avaritia and a few
-     other GT:NH packs are also available).
+     Magic, Gregtech, Magic Bees, Thaumic Tinkerer -- is on by default;
+     Avaritia and a few other GT:NH packs are also available).
    - Drag an aspect from a side panel onto a cell to place an aspect
      already revealed by the research in progress.
    - Click a cell to clear it (aspect or bar); on an empty cell, that
