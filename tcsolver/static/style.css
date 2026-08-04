@@ -783,12 +783,6 @@ canvas {
   overflow: auto;
 }
 
-.data-table thead th {
-  position: sticky;
-  top: 0;
-  background: #1c1d1f;
-}
-
 .data-table {
   width: 100%;
   border-collapse: collapse;
