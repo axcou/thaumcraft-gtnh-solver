@@ -31,8 +31,11 @@ def test_metal_names_are_unique():
     assert len(names) == len(set(names))
 
 
-def test_every_metal_requires_two_metallum():
-    # Every recipe infuses a metal nugget, so metallum is always the base.
+def test_every_metal_starts_with_metallum():
+    # Every recipe infuses a metal nugget, so metallum is always the base
+    # requirement -- but not always exactly 2x (e.g. Manganese needs 5x
+    # and nothing else, per the user's own verified data).
     for recipe in METALLURGIC_RECIPES:
         first = recipe["requires"][0]
-        assert first == {"aspect": "metallum", "amount": 2}, recipe["metal"]
+        assert first["aspect"] == "metallum", recipe["metal"]
+        assert first["amount"] >= 2, recipe["metal"]

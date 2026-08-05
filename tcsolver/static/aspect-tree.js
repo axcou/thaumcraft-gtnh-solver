@@ -71,26 +71,106 @@ window.addEventListener("mouseup", () => {
   treeWrapper.classList.remove("dragging");
 });
 
-// Recursively builds the <li> for `aspect`, with a nested <ul> of its
-// components (which are themselves built the same way) when it's not a
-// primal aspect. Every non-primal aspect here has exactly 2 components, so
-// this never needs to special-case a single child.
-function buildTreeNode(aspect) {
-  const li = document.createElement("li");
-  li.appendChild(makeComboIcon(aspect, "tree-box"));
-  const components = aspectData.aspects[aspect] || [];
-  if (components.length > 0) {
-    const ul = document.createElement("ul");
-    components.forEach((comp) => ul.appendChild(buildTreeNode(comp)));
-    li.appendChild(ul);
+const X_UNIT = 86; // horizontal slot width -- just wider than the widest tree-box (~78px)
+const Y_UNIT = 76; // vertical distance between levels
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+// Assigns every node an integer x "slot" and a depth, bottom-up: each leaf
+// (primal aspect) takes the next free slot, and each parent sits at the
+// *average* of its own two children's slots -- not, as a naive nested-flex
+// layout would, at the center of their combined subtree width. That's what
+// keeps a childless leaf close to its parent even when its sibling has a
+// much deeper subtree, instead of being dragged out to balance it.
+// Every non-primal aspect here has exactly 2 components, so this never
+// needs to special-case a lone child.
+function layoutTree(aspect) {
+  const nodes = [];
+  let nextLeafSlot = 0;
+
+  function visit(name, depth, parentIndex) {
+    const index = nodes.length;
+    nodes.push({ aspect: name, depth, parentIndex, x: 0 });
+    const components = aspectData.aspects[name] || [];
+    if (components.length === 0) {
+      nodes[index].x = nextLeafSlot++;
+    } else {
+      const childIndexes = components.map((comp) => visit(comp, depth + 1, index));
+      const xs = childIndexes.map((ci) => nodes[ci].x);
+      nodes[index].x = (xs[0] + xs[1]) / 2;
+    }
+    return index;
   }
-  return li;
+
+  visit(aspect, 0, -1);
+  return nodes;
 }
 
 function renderTree(aspect) {
   treeDiagram.innerHTML = "";
-  const ul = document.createElement("ul");
-  ul.appendChild(buildTreeNode(aspect));
-  treeDiagram.appendChild(ul);
+  const nodes = layoutTree(aspect);
+
+  let maxX = 0;
+  let maxDepth = 0;
+  for (const node of nodes) {
+    maxX = Math.max(maxX, node.x);
+    maxDepth = Math.max(maxDepth, node.depth);
+  }
+  const width = (maxX + 1) * X_UNIT;
+  const height = (maxDepth + 1) * Y_UNIT;
+  treeDiagram.style.width = `${width}px`;
+  treeDiagram.style.height = `${height}px`;
+
+  const elements = nodes.map((node) => {
+    const el = document.createElement("div");
+    el.className = "tree-node";
+    el.style.left = `${(node.x + 0.5) * X_UNIT}px`;
+    el.style.top = `${(node.depth + 0.5) * Y_UNIT}px`;
+    el.appendChild(makeComboIcon(node.aspect, "tree-box"));
+    treeDiagram.appendChild(el);
+    return el;
+  });
+
+  // Connectors need each box's *actual* rendered edges (its height varies
+  // slightly with font rendering) for the lines to land exactly on them,
+  // so they're measured only after the boxes above are already in the DOM.
+  const diagramRect = treeDiagram.getBoundingClientRect();
+  const edges = elements.map((el) => {
+    const r = el.getBoundingClientRect();
+    return {
+      centerX: r.x + r.width / 2 - diagramRect.x,
+      top: r.y - diagramRect.y,
+      bottom: r.y + r.height - diagramRect.y,
+    };
+  });
+
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("class", "tree-connectors");
+  svg.setAttribute("width", width);
+  svg.setAttribute("height", height);
+
+  // Group children by their parent -- every parent here has exactly 2.
+  const childrenByParent = new Map();
+  nodes.forEach((node, index) => {
+    if (node.parentIndex < 0) return;
+    if (!childrenByParent.has(node.parentIndex)) childrenByParent.set(node.parentIndex, []);
+    childrenByParent.get(node.parentIndex).push(index);
+  });
+
+  for (const [parentIndex, childIndexes] of childrenByParent) {
+    const parent = edges[parentIndex];
+    const [c1, c2] = childIndexes.map((i) => edges[i]);
+    const midY = parent.bottom + (c1.top - parent.bottom) / 2;
+    const path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute(
+      "d",
+      `M ${parent.centerX} ${parent.bottom} L ${parent.centerX} ${midY} ` +
+        `M ${c1.centerX} ${midY} L ${c2.centerX} ${midY} ` +
+        `M ${c1.centerX} ${midY} L ${c1.centerX} ${c1.top} ` +
+        `M ${c2.centerX} ${midY} L ${c2.centerX} ${c2.top}`
+    );
+    svg.appendChild(path);
+  }
+
+  treeDiagram.insertBefore(svg, treeDiagram.firstChild);
   resetView();
 }

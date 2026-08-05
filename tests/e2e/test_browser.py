@@ -8,6 +8,7 @@ Connection Helper's result chain.
 from __future__ import annotations
 
 import json
+import re
 
 
 def _select_aspect(page, aspect: str) -> None:
@@ -25,18 +26,7 @@ def test_tree_matches_expected_node_count(live_server, page):
     page.goto(f"{live_server}/combinations")
     _select_aspect(page, "meto")
 
-    node_count = page.eval_on_selector(
-        "#treeDiagram",
-        """el => {
-            function count(li) {
-                const ul = li.querySelector(':scope > ul');
-                if (!ul) return 1;
-                return 1 + Array.from(ul.children).reduce((sum, child) => sum + count(child), 0);
-            }
-            const rootLi = el.querySelector(':scope > ul > li');
-            return count(rootLi);
-        }""",
-    )
+    node_count = page.eval_on_selector_all("#treeDiagram .tree-box", "els => els.length")
     assert node_count == 47  # tcsolver.aspects.ASPECT_TABLE-derived count for "meto"
 
 
@@ -60,23 +50,76 @@ def test_tree_boxes_do_not_overlap(live_server, page):
             assert not overlap, f"boxes overlap on row y={a['y']}: {a} vs {b}"
 
 
-def test_last_child_keeps_its_vertical_connector(live_server, page):
-    # Regression test for `border: 0 none` on :last-child::after deleting
-    # the drop-line down to the right child along with the (intentionally
-    # removed) outward horizontal stub.
+def test_every_child_box_has_a_connector_reaching_it(live_server, page):
+    # Regression test: every child (not just the first) must have a
+    # connector line actually touching its top edge -- the old CSS
+    # connector (a shared border on a pseudo-element) had a bug where
+    # `border: 0 none` deleted the last child's drop-line along with the
+    # intentionally-removed outward stub. The new SVG connectors draw
+    # each child's drop-line as its own explicit path segment, so this
+    # checks that segment lands exactly on each child's box.
     page.goto(f"{live_server}/combinations")
     _select_aspect(page, "lux")
 
-    after_border_left = page.eval_on_selector(
+    info = page.eval_on_selector(
         "#treeDiagram",
         """el => {
-            const rootLi = el.querySelector(':scope > ul > li');
-            const childUl = rootLi.querySelector(':scope > ul');
-            const lastLi = childUl.lastElementChild;
-            return getComputedStyle(lastLi, '::after').borderLeftStyle;
+            const diagramRect = el.getBoundingClientRect();
+            const boxes = Array.from(el.querySelectorAll('.tree-box')).map(box => {
+                const r = box.getBoundingClientRect();
+                return {
+                    label: box.querySelector('span').textContent,
+                    x: r.x + r.width / 2 - diagramRect.x,
+                    y: r.y - diagramRect.y,
+                };
+            });
+            const d = el.querySelector('.tree-connectors path').getAttribute('d');
+            return {boxes, d};
         }""",
     )
-    assert after_border_left == "solid"
+    points = [
+        (float(m[0]), float(m[1]))
+        for m in re.findall(r"([\d.]+) ([\d.]+)", info["d"])
+    ]
+
+    children = [b for b in info["boxes"] if b["label"] != "Lux"]
+    assert len(children) == 2
+    for child in children:
+        assert any(
+            abs(px - child["x"]) < 1 and abs(py - child["y"]) < 1 for px, py in points
+        ), f"no connector point touches {child['label']}'s box"
+
+
+def test_tree_centers_parent_over_true_midpoint_of_children(live_server, page):
+    # Regression test for the reported bug: a leaf sibling of a much
+    # deeper branch used to get dragged far from their shared parent,
+    # because the old nested-flexbox layout centered each row on the
+    # *combined subtree width* of both children rather than on their own
+    # box centers. Tutamen's components are Terra (primal, no further
+    # children) and Instrumentum (which branches several levels deep) --
+    # exactly the shape that made the bug obvious (Terra ended up ~560px
+    # from Tutamen vs. Instrumentum's ~40px).
+    page.goto(f"{live_server}/combinations")
+    _select_aspect(page, "tutamen")
+
+    positions = page.eval_on_selector_all(
+        "#treeDiagram .tree-box",
+        "els => els.map(el => { const r = el.getBoundingClientRect();"
+        " return {label: el.querySelector('span').textContent, x: r.x + r.width / 2}; })",
+    )
+
+    def first_x(label):
+        return next(p["x"] for p in positions if p["label"] == label)
+
+    parent_x = first_x("Tutamen")
+    terra_x = first_x("Terra")
+    instrumentum_x = first_x("Instrumentum")
+
+    # the parent must sit exactly at the midpoint of its two children --
+    # not off to one side because one child's subtree is much wider
+    assert abs(parent_x - (terra_x + instrumentum_x) / 2) < 1
+    # both children must be equidistant from their shared parent
+    assert abs(abs(parent_x - terra_x) - abs(parent_x - instrumentum_x)) < 1
 
 
 def test_wheel_zooms_the_tree(live_server, page):
@@ -119,15 +162,17 @@ def test_drag_pans_the_tree_by_the_mouse_delta(live_server, page):
 
 
 def test_selecting_aspect_updates_recipe_and_tree(live_server, page):
+    # The root node is always the first one laid out (see layoutTree() in
+    # aspect-tree.js), so it's always the first .tree-box in DOM order.
     page.goto(f"{live_server}/combinations")
     _select_aspect(page, "lux")
     assert page.eval_on_selector(
-        "#treeDiagram", "el => el.querySelector(':scope > ul > li > .tree-box span').textContent"
+        "#treeDiagram", "el => el.querySelector('.tree-box span').textContent"
     ) == "Lux"
 
     _select_aspect(page, "ignis")
     assert page.eval_on_selector(
-        "#treeDiagram", "el => el.querySelector(':scope > ul > li > .tree-box span').textContent"
+        "#treeDiagram", "el => el.querySelector('.tree-box span').textContent"
     ) == "Ignis"
 
 
@@ -335,62 +380,62 @@ def test_sources_pack_filter_hides_aspects_from_disabled_packs(live_server, page
     assert "Aer" in card_names()  # unaffected vanilla aspect
 
 
-# --- Metallurgic Perfection ---------------------------------------------------
+# --- Nugget Dupe (Metallurgic Perfection) --------------------------------------
 
 
-def test_metallurgy_table_lists_recipes_with_aspect_chips(live_server, page):
-    page.goto(f"{live_server}/metallurgy")
-    page.wait_for_selector("#metallurgyBody tr")
+def test_nugget_dupe_table_lists_recipes_with_aspect_chips(live_server, page):
+    page.goto(f"{live_server}/nugget-dupe")
+    page.wait_for_selector("#nuggetDupeBody tr")
 
-    rows = page.query_selector_all("#metallurgyBody tr")
+    rows = page.query_selector_all("#nuggetDupeBody tr")
     assert len(rows) > 50  # the sheet lists 77 metals
 
-    iron_row = page.eval_on_selector(
-        "#metallurgyBody",
+    mithril_row = page.eval_on_selector(
+        "#nuggetDupeBody",
         """el => {
             const row = Array.from(el.querySelectorAll('tr')).find(
-                tr => tr.querySelector('.metal-name')?.textContent === 'Iron'
+                tr => tr.querySelector('.metal-name')?.textContent === 'Mithril'
             );
             return Array.from(row.querySelectorAll('.req-chip span')).map(s => s.textContent);
         }""",
     )
-    assert iron_row == ["2× Metallum", "2× Nebrisum", "1× Ordo"]
+    assert mithril_row == ["2× Metallum", "2× Nebrisum", "1× Ordo"]
 
 
-def test_metallurgy_search_filters_rows_by_metal_name(live_server, page):
-    page.goto(f"{live_server}/metallurgy")
-    page.wait_for_selector("#metallurgyBody tr")
+def test_nugget_dupe_search_filters_rows_by_metal_name(live_server, page):
+    page.goto(f"{live_server}/nugget-dupe")
+    page.wait_for_selector("#nuggetDupeBody tr")
     page.fill("#searchBox", "gold")
     page.wait_for_timeout(150)
 
     names = page.eval_on_selector_all(
-        "#metallurgyBody .metal-name", "els => els.map(el => el.textContent)"
+        "#nuggetDupeBody .metal-name", "els => els.map(el => el.textContent)"
     )
     assert names == ["Gold"]
 
 
-def test_metallurgy_shows_empty_hint_when_no_metal_matches_search(live_server, page):
-    page.goto(f"{live_server}/metallurgy")
-    page.wait_for_selector("#metallurgyBody tr")
+def test_nugget_dupe_shows_empty_hint_when_no_metal_matches_search(live_server, page):
+    page.goto(f"{live_server}/nugget-dupe")
+    page.wait_for_selector("#nuggetDupeBody tr")
     page.fill("#searchBox", "zzznotarealmetal")
     page.wait_for_timeout(150)
 
     assert page.text_content(".empty-hint") == "No metals match the current filters."
 
 
-def test_metallurgy_pack_filter_hides_metals_needing_disabled_pack_aspects(live_server, page):
-    page.goto(f"{live_server}/metallurgy")
-    page.wait_for_selector("#metallurgyBody tr")
+def test_nugget_dupe_pack_filter_hides_metals_needing_disabled_pack_aspects(live_server, page):
+    page.goto(f"{live_server}/nugget-dupe")
+    page.wait_for_selector("#nuggetDupeBody tr")
 
     def metal_names():
         return page.eval_on_selector_all(
-            "#metallurgyBody .metal-name", "els => els.map(el => el.textContent)"
+            "#nuggetDupeBody .metal-name", "els => els.map(el => el.textContent)"
         )
 
-    assert "Iron" in metal_names()  # needs nebrisum (gregtech)
+    assert "Gallium" in metal_names()  # needs electrum (gregtech)
     page.uncheck("#pack_gregtech")
     page.wait_for_timeout(100)
-    assert "Iron" not in metal_names()
+    assert "Gallium" not in metal_names()
     assert "Aluminum" in metal_names()  # needs only volatus + permutatio (vanilla)
 
 

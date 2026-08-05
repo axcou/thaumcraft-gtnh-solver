@@ -4,8 +4,8 @@ A local web app that bundles everything you need for Thaumcraft research
 in GTNH: a hex-board research solver fast enough to never think twice
 about board size, plus five reference tools (aspect combinations, aspect
 sources, a full item-scan database, aspect-to-aspect connections, and
-Metallurgic Perfection recipes) so you're not alt-tabbing between wikis,
-spreadsheets, and NEI while you play.
+Nugget Dupe/Metallurgic Perfection recipes) so you're not alt-tabbing
+between wikis, spreadsheets, and NEI while you play.
 
 Started as a Python reimplementation of two existing tools --
 [ythri/tcresearch](https://github.com/ythri/tcresearch/tree/gh-pages) and
@@ -75,14 +75,14 @@ Six tabs, one local server:
    hand-curated for practicality -- it's the raw scan data, useful for
    double-checking the curated list or finding an alternative source it
    doesn't mention.
-6. **Metallurgic Perfection** -- a searchable table of all 77 tracked
-   metals and how many of which aspects each one's nugget needs to be
-   infused with, restricted to your active mods (a metal disappears if
-   any of its required aspects belongs to a disabled pack).
+6. **Nugget Dupe** -- a searchable table of all 77 tracked metals and how
+   many of which aspects each one's nugget needs to be infused with via
+   Metallurgic Perfection, restricted to your active mods (a metal
+   disappears if any of its required aspects belongs to a disabled pack).
 
 Every page shares the same "Active mods" pack selector (with a one-click
 GTNH preset), so switching which addons you're playing with updates the
-solver, both aspect references, and the metallurgy table all at once.
+solver, both aspect references, and the nugget table all at once.
 
 ## Why it's fast
 
@@ -127,7 +127,7 @@ thaumcraft_gtnh/
 │   ├── solver.py             # research-table board solving algorithm
 │   ├── connections.py        # aspect-to-aspect connection finder
 │   ├── sources.py            # curated cheap/pure item sources per aspect
-│   ├── metallurgy.py         # Metallurgic Perfection infusion recipes per metal
+│   ├── metallurgy.py         # Nugget Dupe (Metallurgic Perfection) recipes per metal
 │   ├── webapp.py             # Flask server: page routes, /aspects, /solve, /connect
 │   ├── templates/
 │   │   ├── base.html             # shared shell: tab nav + content block
@@ -136,7 +136,7 @@ thaumcraft_gtnh/
 │   │   ├── combinations.html     # Aspect Combination
 │   │   ├── sources.html          # Aspect Sources
 │   │   ├── item_lookup.html      # Item Aspect Lookup
-│   │   └── metallurgy.html       # Metallurgic Perfection
+│   │   └── nugget_dupe.html      # Nugget Dupe
 │   └── static/
 │       ├── style.css
 │       ├── utils.js              # shared: capitalize(), icon-tile helper
@@ -150,7 +150,7 @@ thaumcraft_gtnh/
 │       ├── combinations.js       # Aspect Combination: aspect list/search + init
 │       ├── aspect-sources.js     # Aspect Sources: card grid + filters + init
 │       ├── item-lookup.js        # Item Aspect Lookup: search/filter/sort + init
-│       ├── metallurgy.js         # Metallurgic Perfection: recipe table + search
+│       ├── nugget-dupe.js        # Nugget Dupe: recipe table + search
 │       ├── data/
 │       │   └── item_aspects.json # ~14k items x aspect quantities (generated)
 │       └── icons/                # 79 aspect SVGs (69 vectorized in-game + 10 game-icons.net)
@@ -186,7 +186,7 @@ check things the other two layers can't: the Aspect Combination tree's
 DOM structure and connector lines, wheel-zoom/drag-pan, canvas clicks and
 grid import/export on the Solver page, the GTNH pack preset, the
 Connection Helper's result chain, and the search/aspect/pack filters on
-Aspect Sources, Item Aspect Lookup, and Metallurgic Perfection. It
+Aspect Sources, Item Aspect Lookup, and Nugget Dupe. It
 launches your system's installed Edge (falling back to Chrome, then
 Playwright's own Chromium) headlessly against a real instance of the
 Flask app on a throwaway port -- no `playwright install` needed as long
@@ -236,6 +236,11 @@ tab of a
 source (`TCAspects.java`), confirming they're live aspects in the pack.
 That same tab's embedded cell images are also where the 69 vectorized
 aspect icons (see "Icons" above) come from.
+
+32 of the Nugget Dupe recipes (including one brand new one, Steel) were
+overridden with the user's own verified values from a
+[personal spreadsheet](https://docs.google.com/spreadsheets/d/10YTJdpHYbJ2p7iFn0OiTCVWCQS8XPZUpC6CCBD-Ovls) --
+see `tcsolver/metallurgy.py`'s module docstring for exactly which ones.
 
 ## Using it as a library
 

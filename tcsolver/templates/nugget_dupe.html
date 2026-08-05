@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Metallurgic Perfection - Thaumcraft Research Solver{% endblock %}
+{% block title %}Nugget Dupe - Thaumcraft Research Solver{% endblock %}
 {% block content %}
 <header>
-  <h1>Metallurgic Perfection</h1>
-  <p>How many of which aspects each metal's 2x nugget needs to be infused with.</p>
+  <h1>Nugget Dupe</h1>
+  <p>How many of which aspects each metal's 2x nugget needs to be infused with (Metallurgic Perfection).</p>
 </header>
 
 <div id="toolbar">
@@ -18,7 +18,7 @@
         <th>Aspects required</th>
       </tr>
     </thead>
-    <tbody id="metallurgyBody"></tbody>
+    <tbody id="nuggetDupeBody"></tbody>
   </table>
 </div>
 
@@ -31,5 +31,5 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='utils.js') }}?v={{ static_version('utils.js') }}"></script>
 <script src="{{ url_for('static', filename='packs.js') }}?v={{ static_version('packs.js') }}"></script>
-<script src="{{ url_for('static', filename='metallurgy.js') }}?v={{ static_version('metallurgy.js') }}"></script>
+<script src="{{ url_for('static', filename='nugget-dupe.js') }}?v={{ static_version('nugget-dupe.js') }}"></script>
 {% endblock %}

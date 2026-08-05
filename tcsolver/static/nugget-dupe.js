@@ -1,9 +1,9 @@
-// Metallurgic Perfection page: one row per metal, listing how many of
-// which aspects its nugget needs (from tcsolver/metallurgy.py), searchable
-// by metal name and restricted to the currently active mod packs.
+// Nugget Dupe (Metallurgic Perfection) page: one row per metal, listing
+// how many of which aspects its nugget needs (from tcsolver/metallurgy.py),
+// searchable by metal name and restricted to the currently active mod packs.
 
 const searchBox = document.getElementById("searchBox");
-const metallurgyBody = document.getElementById("metallurgyBody");
+const nuggetDupeBody = document.getElementById("nuggetDupeBody");
 const packsEl = document.getElementById("packs");
 
 let aspectData = { aspects: {}, flavor: {}, packs: {}, default_packs: [], metallurgy: [] };
@@ -51,9 +51,9 @@ function renderTable() {
     .filter((r) => r.requires.every((req) => enabled.has(req.aspect)))
     .filter((r) => !filterText || r.metal.toLowerCase().includes(filterText));
 
-  metallurgyBody.innerHTML = "";
+  nuggetDupeBody.innerHTML = "";
   for (const recipe of recipes) {
-    metallurgyBody.appendChild(makeRow(recipe));
+    nuggetDupeBody.appendChild(makeRow(recipe));
   }
 
   if (recipes.length === 0) {
@@ -63,7 +63,7 @@ function renderTable() {
     cell.className = "empty-hint";
     cell.textContent = "No metals match the current filters.";
     row.appendChild(cell);
-    metallurgyBody.appendChild(row);
+    nuggetDupeBody.appendChild(row);
   }
 }
 

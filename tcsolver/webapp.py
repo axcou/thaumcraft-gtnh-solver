@@ -52,15 +52,15 @@ def cache_icons_aggressively(response: Any) -> Any:
 # The site's tab bar: one entry per page, in display order -- grouped as
 # board-solving tools first, then aspect-sourcing references (Combination,
 # Sources, Item Lookup all answer "how do I get/make this aspect", in
-# increasing order of raw-ness), then Metallurgic Perfection last since
-# it's a different topic entirely (metal infusion, not aspect sourcing).
+# increasing order of raw-ness), then Nugget Dupe last since it's a
+# different topic entirely (metal infusion, not aspect sourcing).
 NAV = [
     {"slug": "solver", "path": "/", "label": "Research Table Solver"},
     {"slug": "connections", "path": "/connections", "label": "Connection Helper"},
     {"slug": "combinations", "path": "/combinations", "label": "Aspect Combination"},
     {"slug": "sources", "path": "/sources", "label": "Aspect Sources"},
     {"slug": "item-lookup", "path": "/item-lookup", "label": "Item Aspect Lookup"},
-    {"slug": "metallurgy", "path": "/metallurgy", "label": "Metallurgic Perfection"},
+    {"slug": "nugget-dupe", "path": "/nugget-dupe", "label": "Nugget Dupe"},
 ]
 
 
@@ -84,9 +84,9 @@ def sources_page() -> Any:
     return render_template("sources.html", active="sources", nav=NAV)
 
 
-@app.get("/metallurgy")
-def metallurgy_page() -> Any:
-    return render_template("metallurgy.html", active="metallurgy", nav=NAV)
+@app.get("/nugget-dupe")
+def nugget_dupe_page() -> Any:
+    return render_template("nugget_dupe.html", active="nugget-dupe", nav=NAV)
 
 
 @app.get("/item-lookup")

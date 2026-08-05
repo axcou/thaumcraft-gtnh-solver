@@ -525,92 +525,38 @@ canvas {
   cursor: grabbing;
 }
 
-/* Pure-CSS org-chart tree: each <li> draws a half-border stub that, next
-   to its sibling's other half, forms the horizontal connector, and each
-   <ul> nested inside an <li> draws the vertical stem up to its parent.
-   Every aspect here has either 0 or 2 components, so there's never a
-   lone middle child to special-case.
-
-   Siblings are laid out with flex, not float+shrink-to-fit-inline-block:
-   the float version's width came from the browser guessing how wide the
-   floated content needed to be, and with two unevenly-sized subtrees
-   that guess could come up short, silently dropping the second child to
-   a new line with no visible connector to it at all. Flex distributes
-   the row's width properly regardless of how wide each subtree is. */
+/* Tree diagram: nodes are positioned by their computed (x, y) slot (see
+   layoutTree() in aspect-tree.js -- every parent sits at the horizontal
+   midpoint of its own two children, not the center of their combined
+   subtree width, so a childless leaf next to a deeply-nested sibling
+   stays close to the parent instead of being dragged out to balance the
+   sibling's much wider subtree). Connector lines are drawn into an SVG
+   overlay using each node's *measured* rendered box edges, so they're
+   pixel-exact regardless of box size. */
 .tree-diagram {
-  display: inline-block;
   position: absolute;
   top: 0;
   left: 0;
   transform-origin: 0 0;
 }
 
-.tree-diagram ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-}
-
-.tree-diagram li {
-  flex-shrink: 0;
-  text-align: center;
-  position: relative;
-  padding: 28px 12px 0 12px;
-}
-
-.tree-diagram li > ul {
-  padding-top: 28px;
-  position: relative;
-}
-
-.tree-diagram li > ul::before {
-  content: "";
+.tree-connectors {
   position: absolute;
   top: 0;
-  left: 50%;
-  border-left: 1px solid #444;
-  height: 28px;
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
 }
 
-.tree-diagram li::before,
-.tree-diagram li::after {
-  content: "";
+.tree-connectors path {
+  fill: none;
+  stroke: #444;
+  stroke-width: 1px;
+}
+
+.tree-node {
   position: absolute;
-  top: 0;
-  right: 50%;
-  width: 50%;
-  height: 28px;
-  border-top: 1px solid #444;
-}
-
-.tree-diagram li::after {
-  right: auto;
-  left: 50%;
-  border-left: 1px solid #444;
-}
-
-/* Remove only the *outward-pointing* horizontal stub past the first/last
-   child -- not the whole border. ::after also carries the vertical drop
-   down to that child's own box (its border-left); wiping the whole
-   border there (as `border: 0 none` would) silently deleted the last
-   child's connector down to itself along with the stub. */
-.tree-diagram li:first-child::before {
-  border: 0 none;
-}
-
-.tree-diagram li:last-child::after {
-  border-top: 0 none;
-}
-
-.tree-diagram > ul > li {
-  padding-top: 0;
-}
-
-.tree-diagram > ul > li::before,
-.tree-diagram > ul > li::after {
-  display: none;
+  transform: translate(-50%, -50%);
 }
 
 .tree-box {
@@ -775,7 +721,7 @@ canvas {
   color: #ff9a9a;
 }
 
-/* --- Metallurgic Perfection & Item Aspect Lookup pages (shared table look) --- */
+/* --- Nugget Dupe & Item Aspect Lookup pages (shared table look) --- */
 
 .data-table-wrapper {
   padding: 16px 20px;

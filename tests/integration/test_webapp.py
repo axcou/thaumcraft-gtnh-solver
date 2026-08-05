@@ -26,7 +26,7 @@ def client():
         ("/combinations", "Aspect Combination"),
         ("/sources", "Aspect Sources"),
         ("/item-lookup", "Item Aspect Lookup"),
-        ("/metallurgy", "Metallurgic Perfection"),
+        ("/nugget-dupe", "Nugget Dupe"),
     ],
 )
 def test_each_page_loads_and_shows_its_heading(client, path, heading):
